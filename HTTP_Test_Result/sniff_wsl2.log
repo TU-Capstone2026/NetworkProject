@@ -1,0 +1,748 @@
+미니 Wireshark — eth0 캡처 시작 (HTTP 포트: 80 8080 8000, DNS 53/udp)  Ctrl+C로 종료
+
+──── #2 18:02:31.260151 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=60  id=15713  proto=6 (TCP)
+ TCP      : 54174 -> 80  seq=636863356  ack=0  flags=[SYN]  win=64240  payload=0
+  ▷ 연결 설정 1단계 (SYN)
+
+──── #3 18:02:31.296274 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.20.23.154 -> 172.23.252.163  ttl=49  total_len=60  id=0  proto=6 (TCP)
+ TCP      : 80 -> 54174  seq=1406752358  ack=636863357  flags=[SYN,ACK]  win=65535  payload=0
+  ▷ 연결 설정 2단계 (SYN-ACK)
+
+──── #4 18:02:31.296342 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=52  id=15714  proto=6 (TCP)
+ TCP      : 54174 -> 80  seq=636863357  ack=1406752359  flags=[ACK]  win=126  payload=0
+
+──── #5 18:02:31.298132 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=127  id=15715  proto=6 (TCP)
+ TCP      : 54174 -> 80  seq=636863357  ack=1406752359  flags=[PSH,ACK]  win=126  payload=75
+  ▶ 연결 #1 172.23.252.163:54174 <-> 104.20.23.154:80  버전 판별: HTTP/1.x (텍스트 시작줄 감지)
+  [HTTP/1.x 요청 Request]
+    Method      : GET
+    URI         : /
+    Version     : HTTP/1.0
+    Headers     :
+      Host: example.com
+      User-Agent: curl/8.18.0
+      Accept: */*
+    Body        : (없음)
+
+──── #6 18:02:31.336449 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.20.23.154 -> 172.23.252.163  ttl=49  total_len=52  id=25142  proto=6 (TCP)
+ TCP      : 80 -> 54174  seq=1406752359  ack=636863432  flags=[ACK]  win=16  payload=0
+
+──── #7 18:02:31.345938 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.20.23.154 -> 172.23.252.163  ttl=49  total_len=940  id=25143  proto=6 (TCP)
+ TCP      : 80 -> 54174  seq=1406752359  ack=636863432  flags=[PSH,ACK]  win=16  payload=888
+  [HTTP/1.x 응답 Response]
+    Version     : HTTP/1.1
+    Status Code : 200
+    Reason      : OK
+    Headers     :
+      Date: Fri, 20 Nov 2026 09:02:30 GMT
+      Content-Type: text/html; charset=utf-8
+      Connection: close
+      Server: cloudflare
+      Last-Modified: Thu, 19 Nov 2026 22:11:52 GMT
+      Allow: GET, HEAD
+      Accept-Ranges: bytes
+      Age: 4
+      cf-cache-status: HIT
+      CF-RAY: a5d646b30ade2904-NRT
+      alt-svc: h3=":443"; ma=86400
+    Body        : 577 bytes (연결 종료까지)
+      preview   : <!doctype html><html lang=en><head><meta charset=utf-8><link rel=icon href=data:,><meta name=viewport content="width=device-width,initial-scale=1"><title>Example Domain</title><style>html{color-scheme ...
+
+──── #8 18:02:31.346144 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=52  id=15716  proto=6 (TCP)
+ TCP      : 54174 -> 80  seq=636863432  ack=1406753247  flags=[ACK]  win=132  payload=0
+
+──── #9 18:02:31.346587 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.20.23.154 -> 172.23.252.163  ttl=49  total_len=52  id=25144  proto=6 (TCP)
+ TCP      : 80 -> 54174  seq=1406753247  ack=636863432  flags=[FIN,ACK]  win=16  payload=0
+  ▷ 연결 해제 요청 (FIN)
+  [HTTP/1.x 본문 완료] 총 577 bytes (연결 종료(FIN)로 본문 끝)
+
+──── #10 18:02:31.347705 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=52  id=15717  proto=6 (TCP)
+ TCP      : 54174 -> 80  seq=636863432  ack=1406753248  flags=[FIN,ACK]  win=132  payload=0
+  ▷ 연결 해제 요청 (FIN)
+  ▷ 연결 #1 종료
+
+──── #11 18:02:31.384414 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.20.23.154 -> 172.23.252.163  ttl=49  total_len=52  id=25145  proto=6 (TCP)
+ TCP      : 80 -> 54174  seq=1406753248  ack=636863433  flags=[ACK]  win=16  payload=0
+
+──── #15 18:02:40.790836 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.21.4.210  ttl=64  total_len=60  id=17960  proto=6 (TCP)
+ TCP      : 33308 -> 80  seq=3554159441  ack=0  flags=[SYN]  win=64240  payload=0
+  ▷ 연결 설정 1단계 (SYN)
+
+──── #16 18:02:40.830699 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.21.4.210 -> 172.23.252.163  ttl=52  total_len=60  id=0  proto=6 (TCP)
+ TCP      : 80 -> 33308  seq=695200677  ack=3554159442  flags=[SYN,ACK]  win=65535  payload=0
+  ▷ 연결 설정 2단계 (SYN-ACK)
+
+──── #17 18:02:40.830982 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.21.4.210  ttl=64  total_len=52  id=17961  proto=6 (TCP)
+ TCP      : 33308 -> 80  seq=3554159442  ack=695200678  flags=[ACK]  win=126  payload=0
+
+──── #18 18:02:40.832509 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.21.4.210  ttl=64  total_len=131  id=17962  proto=6 (TCP)
+ TCP      : 33308 -> 80  seq=3554159442  ack=695200678  flags=[PSH,ACK]  win=126  payload=79
+  ▶ 연결 #2 172.23.252.163:33308 <-> 104.21.4.210:80  버전 판별: HTTP/1.x (텍스트 시작줄 감지)
+  [HTTP/1.x 요청 Request]
+    Method      : GET
+    URI         : /
+    Version     : HTTP/1.1
+    Headers     :
+      Host: httpforever.com
+      User-Agent: curl/8.18.0
+      Accept: */*
+    Body        : (없음)
+
+──── #19 18:02:40.875919 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.21.4.210 -> 172.23.252.163  ttl=52  total_len=52  id=42753  proto=6 (TCP)
+ TCP      : 80 -> 33308  seq=695200678  ack=3554159521  flags=[ACK]  win=16  payload=0
+
+──── #20 18:02:41.057795 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.21.4.210 -> 172.23.252.163  ttl=52  total_len=1500  id=42754  proto=6 (TCP)
+ TCP      : 80 -> 33308  seq=695200678  ack=3554159521  flags=[ACK]  win=16  payload=1448
+  [HTTP/1.x] 헤더 조각 1448 bytes 수집 중 (다음 세그먼트 대기)
+
+──── #21 18:02:41.057958 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.21.4.210 -> 172.23.252.163  ttl=52  total_len=7292  id=42755  proto=6 (TCP)
+ TCP      : 80 -> 33308  seq=695202126  ack=3554159521  flags=[PSH,ACK]  win=16  payload=7240
+  [HTTP/1.x 응답 Response]
+    Version     : HTTP/1.1
+    Status Code : 200
+    Reason      : OK
+    Headers     :
+      Date: Fri, 20 Nov 2026 09:02:40 GMT
+      Content-Type: text/html
+      Transfer-Encoding: chunked
+      Connection: keep-alive
+      Server: cloudflare
+      Last-Modified: Wed, 01 Jul 2026 19:39:17 GMT
+      vary: accept-encoding
+      Referrer-Policy: strict-origin-when-cross-origin
+      X-Content-Type-Options: nosniff
+      X-Frame-Options: DENY
+      X-Permitted-Cross-Domain-Policies: none
+      X-XSS-Protection: 0
+      Cross-Origin-Resource-Policy: same-origin
+      Permissions-Policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(), gamepad=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), usb=(), web-share=(), xr-spatial-tracking=(), interest-cohort=(), browsing-topics=()
+      Content-Security-Policy: default-src 'none'; script-src 'self' 'report-sha256' 'report-sample'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; report-uri https://scotthelme.report-uri.com/r/d/csp/enforce; report-to default
+      Reporting-Endpoints: default="https://scotthelme.report-uri.com/a/d/g"
+      Report-To: {"group":"default","max_age":31536000,"endpoints":[{"url":"https://scotthelme.report-uri.com/a/d/g"}],"include_subdomains":true}
+      NEL: {"report_to":"default","max_age":31536000,"include_subdomains":true}
+      cf-cache-status: DYNAMIC
+      CF-RAY: a5d646eea8badba0-HKG
+    Body        : 7229 bytes (chunked)
+      preview   : 2cf9..<!DOCTYPE html>.<html lang="en">..<head>...<meta charset="utf-8">...<meta name="viewport" content="width=device-width, initial-scale=1">...<title>HTTP Forever ... A reliably insecure connection< ...
+
+──── #22 18:02:41.058044 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.21.4.210 -> 172.23.252.163  ttl=52  total_len=2948  id=42760  proto=6 (TCP)
+ TCP      : 80 -> 33308  seq=695209366  ack=3554159521  flags=[ACK]  win=16  payload=2896
+  [HTTP/1.x 본문 이어짐] +2896 bytes (누적 10125)
+
+──── #23 18:02:41.058059 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.21.4.210 -> 172.23.252.163  ttl=52  total_len=1448  id=42762  proto=6 (TCP)
+ TCP      : 80 -> 33308  seq=695212262  ack=3554159521  flags=[PSH,ACK]  win=16  payload=1396
+  [HTTP/1.x 본문 이어짐] +1396 bytes (누적 11521)
+
+──── #24 18:02:41.058070 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.21.4.210 -> 172.23.252.163  ttl=52  total_len=57  id=42763  proto=6 (TCP)
+ TCP      : 80 -> 33308  seq=695213658  ack=3554159521  flags=[PSH,ACK]  win=16  payload=5
+  [HTTP/1.x 본문 이어짐] +5 bytes (누적 11526)
+  [HTTP/1.x 본문 완료] 총 11526 bytes (마지막 청크(0) 받음)
+
+──── #25 18:02:41.058081 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.21.4.210  ttl=64  total_len=52  id=17963  proto=6 (TCP)
+ TCP      : 33308 -> 80  seq=3554159521  ack=695202126  flags=[ACK]  win=132  payload=0
+
+──── #26 18:02:41.058091 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.21.4.210  ttl=64  total_len=52  id=17964  proto=6 (TCP)
+ TCP      : 33308 -> 80  seq=3554159521  ack=695209366  flags=[ACK]  win=161  payload=0
+
+──── #27 18:02:41.058101 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.21.4.210  ttl=64  total_len=52  id=17965  proto=6 (TCP)
+ TCP      : 33308 -> 80  seq=3554159521  ack=695213663  flags=[ACK]  win=178  payload=0
+
+──── #28 18:02:41.060956 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.21.4.210  ttl=64  total_len=52  id=17966  proto=6 (TCP)
+ TCP      : 33308 -> 80  seq=3554159521  ack=695213663  flags=[FIN,ACK]  win=178  payload=0
+  ▷ 연결 해제 요청 (FIN)
+
+──── #29 18:02:41.105509 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.21.4.210 -> 172.23.252.163  ttl=52  total_len=52  id=42764  proto=6 (TCP)
+ TCP      : 80 -> 33308  seq=695213663  ack=3554159522  flags=[FIN,ACK]  win=16  payload=0
+  ▷ 연결 해제 요청 (FIN)
+  ▷ 연결 #2 종료
+
+──── #30 18:02:41.105671 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.21.4.210  ttl=64  total_len=52  id=17967  proto=6 (TCP)
+ TCP      : 33308 -> 80  seq=3554159522  ack=695213664  flags=[ACK]  win=178  payload=0
+
+──── #31 18:02:50.599970 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=60  id=16583  proto=6 (TCP)
+ TCP      : 34076 -> 80  seq=3146545468  ack=0  flags=[SYN]  win=64240  payload=0
+  ▷ 연결 설정 1단계 (SYN)
+
+──── #32 18:02:50.637007 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.20.23.154 -> 172.23.252.163  ttl=49  total_len=60  id=0  proto=6 (TCP)
+ TCP      : 80 -> 34076  seq=4003963583  ack=3146545469  flags=[SYN,ACK]  win=65535  payload=0
+  ▷ 연결 설정 2단계 (SYN-ACK)
+
+──── #33 18:02:50.637093 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=52  id=16584  proto=6 (TCP)
+ TCP      : 34076 -> 80  seq=3146545469  ack=4003963584  flags=[ACK]  win=126  payload=0
+
+──── #34 18:02:50.637105 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=127  id=16585  proto=6 (TCP)
+ TCP      : 34076 -> 80  seq=3146545469  ack=4003963584  flags=[PSH,ACK]  win=126  payload=75
+  ▶ 연결 #3 172.23.252.163:34076 <-> 104.20.23.154:80  버전 판별: HTTP/1.x (텍스트 시작줄 감지)
+  [HTTP/1.x 요청 Request]
+    Method      : GET
+    URI         : /
+    Version     : HTTP/1.1
+    Headers     :
+      Host: example.com
+      User-Agent: curl/8.18.0
+      Accept: */*
+    Body        : (없음)
+
+──── #35 18:02:50.676123 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.20.23.154 -> 172.23.252.163  ttl=49  total_len=52  id=59656  proto=6 (TCP)
+ TCP      : 80 -> 34076  seq=4003963584  ack=3146545544  flags=[ACK]  win=16  payload=0
+
+──── #36 18:02:50.682782 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.20.23.154 -> 172.23.252.163  ttl=49  total_len=980  id=59657  proto=6 (TCP)
+ TCP      : 80 -> 34076  seq=4003963584  ack=3146545544  flags=[PSH,ACK]  win=16  payload=928
+  [HTTP/1.x 응답 Response]
+    Version     : HTTP/1.1
+    Status Code : 200
+    Reason      : OK
+    Headers     :
+      Date: Fri, 20 Nov 2026 09:02:50 GMT
+      Content-Type: text/html; charset=utf-8
+      Transfer-Encoding: chunked
+      Connection: keep-alive
+      Server: cloudflare
+      Last-Modified: Thu, 19 Nov 2026 22:11:52 GMT
+      Allow: GET, HEAD
+      Accept-Ranges: bytes
+      Age: 3
+      cf-cache-status: HIT
+      CF-RAY: a5d6472be969005d-NRT
+      alt-svc: h3=":443"; ma=86400
+    Body        : 584 bytes (chunked)
+      preview   : 241..<!doctype html><html lang=en><head><meta charset=utf-8><link rel=icon href=data:,><meta name=viewport content="width=device-width,initial-scale=1"><title>Example Domain</title><style>html{color-s ...
+
+──── #37 18:02:50.682899 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.20.23.154 -> 172.23.252.163  ttl=49  total_len=57  id=59658  proto=6 (TCP)
+ TCP      : 80 -> 34076  seq=4003964512  ack=3146545544  flags=[PSH,ACK]  win=16  payload=5
+  [HTTP/1.x 본문 이어짐] +5 bytes (누적 589)
+  [HTTP/1.x 본문 완료] 총 589 bytes (마지막 청크(0) 받음)
+
+──── #38 18:02:50.682913 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=52  id=16586  proto=6 (TCP)
+ TCP      : 34076 -> 80  seq=3146545544  ack=4003964512  flags=[ACK]  win=132  payload=0
+
+──── #39 18:02:50.682921 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=52  id=16587  proto=6 (TCP)
+ TCP      : 34076 -> 80  seq=3146545544  ack=4003964517  flags=[ACK]  win=132  payload=0
+
+──── #40 18:02:50.683321 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=127  id=16588  proto=6 (TCP)
+ TCP      : 34076 -> 80  seq=3146545544  ack=4003964517  flags=[PSH,ACK]  win=132  payload=75
+  [HTTP/1.x 요청 Request]
+    Method      : GET
+    URI         : /
+    Version     : HTTP/1.1
+    Headers     :
+      Host: example.com
+      User-Agent: curl/8.18.0
+      Accept: */*
+    Body        : (없음)
+
+──── #41 18:02:50.726428 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.20.23.154 -> 172.23.252.163  ttl=49  total_len=980  id=59659  proto=6 (TCP)
+ TCP      : 80 -> 34076  seq=4003964517  ack=3146545619  flags=[PSH,ACK]  win=16  payload=928
+  [HTTP/1.x 응답 Response]
+    Version     : HTTP/1.1
+    Status Code : 200
+    Reason      : OK
+    Headers     :
+      Date: Fri, 20 Nov 2026 09:02:50 GMT
+      Content-Type: text/html; charset=utf-8
+      Transfer-Encoding: chunked
+      Connection: keep-alive
+      Server: cloudflare
+      Last-Modified: Thu, 19 Nov 2026 22:11:52 GMT
+      Allow: GET, HEAD
+      Accept-Ranges: bytes
+      Age: 3
+      cf-cache-status: HIT
+      CF-RAY: a5d6472c2a4a005d-NRT
+      alt-svc: h3=":443"; ma=86400
+    Body        : 584 bytes (chunked)
+      preview   : 241..<!doctype html><html lang=en><head><meta charset=utf-8><link rel=icon href=data:,><meta name=viewport content="width=device-width,initial-scale=1"><title>Example Domain</title><style>html{color-s ...
+
+──── #42 18:02:50.726664 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.20.23.154 -> 172.23.252.163  ttl=49  total_len=57  id=59660  proto=6 (TCP)
+ TCP      : 80 -> 34076  seq=4003965445  ack=3146545619  flags=[PSH,ACK]  win=16  payload=5
+  [HTTP/1.x 본문 이어짐] +5 bytes (누적 589)
+  [HTTP/1.x 본문 완료] 총 589 bytes (마지막 청크(0) 받음)
+
+──── #43 18:02:50.726680 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=52  id=16589  proto=6 (TCP)
+ TCP      : 34076 -> 80  seq=3146545619  ack=4003965450  flags=[ACK]  win=138  payload=0
+
+──── #44 18:02:50.727015 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=52  id=16590  proto=6 (TCP)
+ TCP      : 34076 -> 80  seq=3146545619  ack=4003965450  flags=[FIN,ACK]  win=138  payload=0
+  ▷ 연결 해제 요청 (FIN)
+
+──── #45 18:02:50.764354 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 104.20.23.154 -> 172.23.252.163  ttl=49  total_len=52  id=59661  proto=6 (TCP)
+ TCP      : 80 -> 34076  seq=4003965450  ack=3146545620  flags=[FIN,ACK]  win=16  payload=0
+  ▷ 연결 해제 요청 (FIN)
+  ▷ 연결 #3 종료
+
+──── #46 18:02:50.764868 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 104.20.23.154  ttl=64  total_len=52  id=16591  proto=6 (TCP)
+ TCP      : 34076 -> 80  seq=3146545620  ack=4003965451  flags=[ACK]  win=138  payload=0
+
+──── #47 18:03:00.581036 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=60  id=4908  proto=6 (TCP)
+ TCP      : 39336 -> 80  seq=2716916417  ack=0  flags=[SYN]  win=64240  payload=0
+  ▷ 연결 설정 1단계 (SYN)
+
+──── #48 18:03:00.616199 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=60  id=0  proto=6 (TCP)
+ TCP      : 80 -> 39336  seq=2663451229  ack=2716916418  flags=[SYN,ACK]  win=65160  payload=0
+  ▷ 연결 설정 2단계 (SYN-ACK)
+
+──── #49 18:03:00.616350 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=52  id=4909  proto=6 (TCP)
+ TCP      : 39336 -> 80  seq=2716916418  ack=2663451230  flags=[ACK]  win=126  payload=0
+
+──── #50 18:03:00.618648 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=163  id=4910  proto=6 (TCP)
+ TCP      : 39336 -> 80  seq=2716916418  ack=2663451230  flags=[PSH,ACK]  win=126  payload=111
+  ▶ 연결 #4 172.23.252.163:39336 <-> 139.162.123.134:80  버전 판별: HTTP/2 (connection preface 감지)
+  [HTTP/2] client connection preface (PRI * HTTP/2.0)
+  [HTTP/2 Frame] SETTINGS      len=18    stream=0   flags=0x00
+      MAX_CONCURRENT_STREAMS(3) = 100
+      INITIAL_WINDOW_SIZE(4) = 65536
+      ENABLE_PUSH(2) = 0
+  [HTTP/2 Frame] WINDOW_UPDATE len=4     stream=0   flags=0x00
+      increment = 1048510465
+  [HTTP/2 Frame] HEADERS       len=38    stream=1   flags=0x05 END_STREAM END_HEADERS
+    [HTTP/2 요청 Request] stream=1
+      Method      : GET
+      URI         : nghttp2.org/httpbin/get
+      Version     : HTTP/2
+      Headers (HPACK 디코딩 38 bytes -> 6개):
+        :method: GET
+        :scheme: http
+        :authority: nghttp2.org
+        :path: /httpbin/get
+        user-agent: curl/8.18.0
+        accept: */*
+      (END_STREAM: 본문 없음)
+
+──── #51 18:03:00.619008 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=78  id=4911  proto=6 (TCP)
+ TCP      : 39336 -> 80  seq=2716916529  ack=2663451230  flags=[PSH,ACK]  win=126  payload=26
+  [HTTP/2 Frame] WINDOW_UPDATE len=4     stream=1   flags=0x00
+      increment = 10420225
+  [HTTP/2 Frame] WINDOW_UPDATE len=4     stream=1   flags=0x00
+      increment = 10420225
+
+──── #52 18:03:00.652556 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=52  id=52691  proto=6 (TCP)
+ TCP      : 80 -> 39336  seq=2663451230  ack=2716916529  flags=[ACK]  win=128  payload=0
+
+──── #53 18:03:00.653740 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=52  id=52692  proto=6 (TCP)
+ TCP      : 80 -> 39336  seq=2663451230  ack=2716916555  flags=[ACK]  win=128  payload=0
+
+──── #54 18:03:00.653898 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=321  id=52693  proto=6 (TCP)
+ TCP      : 80 -> 39336  seq=2663451230  ack=2716916555  flags=[PSH,ACK]  win=128  payload=269
+  [HTTP/2 Frame] SETTINGS      len=30    stream=0   flags=0x00
+      MAX_CONCURRENT_STREAMS(3) = 100
+      ?(9) = 1
+      MAX_HEADER_LIST_SIZE(6) = 65536
+      INITIAL_WINDOW_SIZE(4) = 131072
+      ?(8) = 1
+  [HTTP/2 Frame] SETTINGS      len=0     stream=0   flags=0x01 ACK
+  [HTTP/2 Frame] WINDOW_UPDATE len=4     stream=0   flags=0x00
+      increment = 983041
+  [HTTP/2 Frame] HEADERS       len=61    stream=1   flags=0x04 END_HEADERS
+    [HTTP/2 응답 Response] stream=1
+      Version     : HTTP/2
+      Status Code : 502
+      Headers (HPACK 디코딩 61 bytes -> 5개):
+        :status: 502
+        content-type: text/html; charset=UTF-8
+        server: nghttpx
+        content-length: 129
+        date: Fri, 20 Nov 2026 09:03:00 GMT
+  [HTTP/2 Frame] DATA          len=129   stream=1   flags=0x01 END_STREAM
+      data 129 bytes: <!DOCTYPE html><html lang="en"><title>502 Bad Gateway</title><body><h1>502 Bad G ...
+
+──── #55 18:03:00.654019 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=52  id=4912  proto=6 (TCP)
+ TCP      : 39336 -> 80  seq=2716916555  ack=2663451499  flags=[ACK]  win=126  payload=0
+
+──── #56 18:03:00.654493 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=61  id=4913  proto=6 (TCP)
+ TCP      : 39336 -> 80  seq=2716916555  ack=2663451499  flags=[PSH,ACK]  win=126  payload=9
+  [HTTP/2 Frame] SETTINGS      len=0     stream=0   flags=0x01 ACK
+
+──── #57 18:03:00.654656 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=78  id=4914  proto=6 (TCP)
+ TCP      : 39336 -> 80  seq=2716916564  ack=2663451499  flags=[PSH,ACK]  win=126  payload=26
+  [HTTP/2 Frame] GOAWAY        len=17    stream=0   flags=0x00
+      last stream = 0, error code = 0
+
+──── #58 18:03:00.654973 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=52  id=4915  proto=6 (TCP)
+ TCP      : 39336 -> 80  seq=2716916590  ack=2663451499  flags=[FIN,ACK]  win=126  payload=0
+  ▷ 연결 해제 요청 (FIN)
+
+──── #59 18:03:00.689435 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=52  id=52694  proto=6 (TCP)
+ TCP      : 80 -> 39336  seq=2663451499  ack=2716916590  flags=[ACK]  win=128  payload=0
+
+──── #60 18:03:00.689651 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=52  id=52695  proto=6 (TCP)
+ TCP      : 80 -> 39336  seq=2663451499  ack=2716916591  flags=[FIN,ACK]  win=128  payload=0
+  ▷ 연결 해제 요청 (FIN)
+  ▷ 연결 #4 종료
+
+──── #61 18:03:00.689808 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=52  id=4916  proto=6 (TCP)
+ TCP      : 39336 -> 80  seq=2716916591  ack=2663451500  flags=[ACK]  win=126  payload=0
+
+──── #62 18:03:09.431287 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=60  id=50285  proto=6 (TCP)
+ TCP      : 39352 -> 80  seq=2851251688  ack=0  flags=[SYN]  win=64240  payload=0
+  ▷ 연결 설정 1단계 (SYN)
+
+──── #63 18:03:09.470817 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=60  id=0  proto=6 (TCP)
+ TCP      : 80 -> 39352  seq=3427858898  ack=2851251689  flags=[SYN,ACK]  win=65160  payload=0
+  ▷ 연결 설정 2단계 (SYN-ACK)
+
+──── #64 18:03:09.470906 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=52  id=50286  proto=6 (TCP)
+ TCP      : 39352 -> 80  seq=2851251689  ack=3427858899  flags=[ACK]  win=126  payload=0
+
+──── #65 18:03:09.473137 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=221  id=50287  proto=6 (TCP)
+ TCP      : 39352 -> 80  seq=2851251689  ack=3427858899  flags=[PSH,ACK]  win=126  payload=169
+  ▶ 연결 #5 172.23.252.163:39352 <-> 139.162.123.134:80  버전 판별: HTTP/2 (connection preface 감지)
+  [HTTP/2] client connection preface (PRI * HTTP/2.0)
+  [HTTP/2 Frame] SETTINGS      len=18    stream=0   flags=0x00
+      MAX_CONCURRENT_STREAMS(3) = 100
+      INITIAL_WINDOW_SIZE(4) = 65536
+      ENABLE_PUSH(2) = 0
+  [HTTP/2 Frame] WINDOW_UPDATE len=4     stream=0   flags=0x00
+      increment = 1048510465
+  [HTTP/2 Frame] HEADERS       len=69    stream=1   flags=0x04 END_HEADERS
+    [HTTP/2 요청 Request] stream=1
+      Method      : POST
+      URI         : nghttp2.org/httpbin/post
+      Version     : HTTP/2
+      Headers (HPACK 디코딩 69 bytes -> 8개):
+        :method: POST
+        :scheme: http
+        :authority: nghttp2.org
+        :path: /httpbin/post
+        user-agent: curl/8.18.0
+        accept: */*
+        content-length: 18
+        content-type: application/x-www-form-urlencoded
+  [HTTP/2 Frame] DATA          len=18    stream=1   flags=0x01 END_STREAM
+      data 18 bytes: id=student&pw=1234
+
+──── #66 18:03:09.473493 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=78  id=50288  proto=6 (TCP)
+ TCP      : 39352 -> 80  seq=2851251858  ack=3427858899  flags=[PSH,ACK]  win=126  payload=26
+  [HTTP/2 Frame] WINDOW_UPDATE len=4     stream=1   flags=0x00
+      increment = 10420225
+  [HTTP/2 Frame] WINDOW_UPDATE len=4     stream=1   flags=0x00
+      increment = 10420225
+
+──── #67 18:03:09.512615 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=52  id=47779  proto=6 (TCP)
+ TCP      : 80 -> 39352  seq=3427858899  ack=2851251858  flags=[ACK]  win=127  payload=0
+
+──── #68 18:03:09.512752 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=52  id=47780  proto=6 (TCP)
+ TCP      : 80 -> 39352  seq=3427858899  ack=2851251884  flags=[ACK]  win=127  payload=0
+
+──── #69 18:03:09.513504 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=321  id=47781  proto=6 (TCP)
+ TCP      : 80 -> 39352  seq=3427858899  ack=2851251884  flags=[PSH,ACK]  win=127  payload=269
+  [HTTP/2 Frame] SETTINGS      len=30    stream=0   flags=0x00
+      MAX_CONCURRENT_STREAMS(3) = 100
+      ?(9) = 1
+      MAX_HEADER_LIST_SIZE(6) = 65536
+      INITIAL_WINDOW_SIZE(4) = 131072
+      ?(8) = 1
+  [HTTP/2 Frame] SETTINGS      len=0     stream=0   flags=0x01 ACK
+  [HTTP/2 Frame] WINDOW_UPDATE len=4     stream=0   flags=0x00
+      increment = 983041
+  [HTTP/2 Frame] HEADERS       len=61    stream=1   flags=0x04 END_HEADERS
+    [HTTP/2 응답 Response] stream=1
+      Version     : HTTP/2
+      Status Code : 502
+      Headers (HPACK 디코딩 61 bytes -> 5개):
+        :status: 502
+        content-type: text/html; charset=UTF-8
+        server: nghttpx
+        content-length: 129
+        date: Fri, 20 Nov 2026 09:03:09 GMT
+  [HTTP/2 Frame] DATA          len=129   stream=1   flags=0x01 END_STREAM
+      data 129 bytes: <!DOCTYPE html><html lang="en"><title>502 Bad Gateway</title><body><h1>502 Bad G ...
+
+──── #70 18:03:09.513742 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=52  id=50289  proto=6 (TCP)
+ TCP      : 39352 -> 80  seq=2851251884  ack=3427859168  flags=[ACK]  win=126  payload=0
+
+──── #71 18:03:09.514093 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=61  id=50290  proto=6 (TCP)
+ TCP      : 39352 -> 80  seq=2851251884  ack=3427859168  flags=[PSH,ACK]  win=126  payload=9
+  [HTTP/2 Frame] SETTINGS      len=0     stream=0   flags=0x01 ACK
+
+──── #72 18:03:09.514601 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=78  id=50291  proto=6 (TCP)
+ TCP      : 39352 -> 80  seq=2851251893  ack=3427859168  flags=[PSH,ACK]  win=126  payload=26
+  [HTTP/2 Frame] GOAWAY        len=17    stream=0   flags=0x00
+      last stream = 0, error code = 0
+
+──── #73 18:03:09.514734 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=52  id=50292  proto=6 (TCP)
+ TCP      : 39352 -> 80  seq=2851251919  ack=3427859168  flags=[FIN,ACK]  win=126  payload=0
+  ▷ 연결 해제 요청 (FIN)
+
+──── #74 18:03:09.553434 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=52  id=47782  proto=6 (TCP)
+ TCP      : 80 -> 39352  seq=3427859168  ack=2851251920  flags=[ACK]  win=127  payload=0
+
+──── #75 18:03:09.553681 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=52  id=47783  proto=6 (TCP)
+ TCP      : 80 -> 39352  seq=3427859168  ack=2851251920  flags=[FIN,ACK]  win=127  payload=0
+  ▷ 연결 해제 요청 (FIN)
+  ▷ 연결 #5 종료
+
+──── #76 18:03:09.554181 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=52  id=0  proto=6 (TCP)
+ TCP      : 39352 -> 80  seq=2851251920  ack=3427859169  flags=[ACK]  win=126  payload=0
+
+──── #79 18:03:15.141162 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=60  id=39868  proto=6 (TCP)
+ TCP      : 45882 -> 80  seq=1493793139  ack=0  flags=[SYN]  win=64240  payload=0
+  ▷ 연결 설정 1단계 (SYN)
+
+──── #80 18:03:15.176466 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=60  id=0  proto=6 (TCP)
+ TCP      : 80 -> 45882  seq=2095284160  ack=1493793140  flags=[SYN,ACK]  win=65160  payload=0
+  ▷ 연결 설정 2단계 (SYN-ACK)
+
+──── #81 18:03:15.176604 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=52  id=39869  proto=6 (TCP)
+ TCP      : 45882 -> 80  seq=1493793140  ack=2095284161  flags=[ACK]  win=126  payload=0
+
+──── #82 18:03:15.176751 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=168  id=39870  proto=6 (TCP)
+ TCP      : 45882 -> 80  seq=1493793140  ack=2095284161  flags=[PSH,ACK]  win=126  payload=116
+  ▶ 연결 #6 172.23.252.163:45882 <-> 139.162.123.134:80  버전 판별: HTTP/2 (connection preface 감지)
+  [HTTP/2] client connection preface (PRI * HTTP/2.0)
+  [HTTP/2 Frame] SETTINGS      len=18    stream=0   flags=0x00
+      MAX_CONCURRENT_STREAMS(3) = 100
+      INITIAL_WINDOW_SIZE(4) = 65536
+      ENABLE_PUSH(2) = 0
+  [HTTP/2 Frame] WINDOW_UPDATE len=4     stream=0   flags=0x00
+      increment = 1048510465
+  [HTTP/2 Frame] HEADERS       len=43    stream=1   flags=0x05 END_STREAM END_HEADERS
+    [HTTP/2 요청 Request] stream=1
+      Method      : GET
+      URI         : nghttp2.org/httpbin/status/404
+      Version     : HTTP/2
+      Headers (HPACK 디코딩 43 bytes -> 6개):
+        :method: GET
+        :scheme: http
+        :authority: nghttp2.org
+        :path: /httpbin/status/404
+        user-agent: curl/8.18.0
+        accept: */*
+      (END_STREAM: 본문 없음)
+
+──── #83 18:03:15.176910 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=78  id=39871  proto=6 (TCP)
+ TCP      : 45882 -> 80  seq=1493793256  ack=2095284161  flags=[PSH,ACK]  win=126  payload=26
+  [HTTP/2 Frame] WINDOW_UPDATE len=4     stream=1   flags=0x00
+      increment = 10420225
+  [HTTP/2 Frame] WINDOW_UPDATE len=4     stream=1   flags=0x00
+      increment = 10420225
+
+──── #84 18:03:15.213588 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=52  id=48725  proto=6 (TCP)
+ TCP      : 80 -> 45882  seq=2095284161  ack=1493793256  flags=[ACK]  win=128  payload=0
+
+──── #85 18:03:15.213698 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=52  id=48726  proto=6 (TCP)
+ TCP      : 80 -> 45882  seq=2095284161  ack=1493793282  flags=[ACK]  win=128  payload=0
+
+──── #86 18:03:15.213717 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=321  id=48727  proto=6 (TCP)
+ TCP      : 80 -> 45882  seq=2095284161  ack=1493793282  flags=[PSH,ACK]  win=128  payload=269
+  [HTTP/2 Frame] SETTINGS      len=30    stream=0   flags=0x00
+      MAX_CONCURRENT_STREAMS(3) = 100
+      ?(9) = 1
+      MAX_HEADER_LIST_SIZE(6) = 65536
+      INITIAL_WINDOW_SIZE(4) = 131072
+      ?(8) = 1
+  [HTTP/2 Frame] SETTINGS      len=0     stream=0   flags=0x01 ACK
+  [HTTP/2 Frame] WINDOW_UPDATE len=4     stream=0   flags=0x00
+      increment = 983041
+  [HTTP/2 Frame] HEADERS       len=61    stream=1   flags=0x04 END_HEADERS
+    [HTTP/2 응답 Response] stream=1
+      Version     : HTTP/2
+      Status Code : 502
+      Headers (HPACK 디코딩 61 bytes -> 5개):
+        :status: 502
+        content-type: text/html; charset=UTF-8
+        server: nghttpx
+        content-length: 129
+        date: Fri, 20 Nov 2026 09:03:14 GMT
+  [HTTP/2 Frame] DATA          len=129   stream=1   flags=0x01 END_STREAM
+      data 129 bytes: <!DOCTYPE html><html lang="en"><title>502 Bad Gateway</title><body><h1>502 Bad G ...
+
+──── #87 18:03:15.213822 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=52  id=39872  proto=6 (TCP)
+ TCP      : 45882 -> 80  seq=1493793282  ack=2095284430  flags=[ACK]  win=126  payload=0
+
+──── #88 18:03:15.213838 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=61  id=39873  proto=6 (TCP)
+ TCP      : 45882 -> 80  seq=1493793282  ack=2095284430  flags=[PSH,ACK]  win=126  payload=9
+  [HTTP/2 Frame] SETTINGS      len=0     stream=0   flags=0x01 ACK
+
+──── #89 18:03:15.213855 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=78  id=39874  proto=6 (TCP)
+ TCP      : 45882 -> 80  seq=1493793291  ack=2095284430  flags=[PSH,ACK]  win=126  payload=26
+  [HTTP/2 Frame] GOAWAY        len=17    stream=0   flags=0x00
+      last stream = 0, error code = 0
+
+──── #90 18:03:15.214120 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=52  id=39875  proto=6 (TCP)
+ TCP      : 45882 -> 80  seq=1493793317  ack=2095284430  flags=[FIN,ACK]  win=126  payload=0
+  ▷ 연결 해제 요청 (FIN)
+
+──── #91 18:03:15.248131 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=52  id=48728  proto=6 (TCP)
+ TCP      : 80 -> 45882  seq=2095284430  ack=1493793317  flags=[ACK]  win=128  payload=0
+
+──── #92 18:03:15.248268 IN(수신) ────
+ Ethernet : 00:15:5d:c9:dc:09 -> 00:15:5d:8c:34:94  type=0x0800 (IPv4)
+ IPv4     : 139.162.123.134 -> 172.23.252.163  ttl=49  total_len=52  id=48729  proto=6 (TCP)
+ TCP      : 80 -> 45882  seq=2095284430  ack=1493793318  flags=[FIN,ACK]  win=128  payload=0
+  ▷ 연결 해제 요청 (FIN)
+  ▷ 연결 #6 종료
+
+──── #93 18:03:15.248328 OUT(송신) ────
+ Ethernet : 00:15:5d:8c:34:94 -> 00:15:5d:c9:dc:09  type=0x0800 (IPv4)
+ IPv4     : 172.23.252.163 -> 139.162.123.134  ttl=64  total_len=52  id=39876  proto=6 (TCP)
+ TCP      : 45882 -> 80  seq=1493793318  ack=2095284431  flags=[ACK]  win=126  payload=0
