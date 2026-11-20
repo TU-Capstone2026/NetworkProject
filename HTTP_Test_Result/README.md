@@ -1,101 +1,117 @@
-# HTTP_Test_Result — raw socket 스니퍼 vs Wireshark 비교 결과
+# HTTP_Test_Result — raw socket 스니퍼 vs Wireshark 비교 분석
 
-같은 시간에 **raw socket으로 구현한 스니퍼(`http_sniffer`)**와 **Wireshark**로 동시에 캡처하고, 같은 패킷끼리 값을 비교한 결과.
+같은 시간에 **raw socket 스니퍼(`http_sniffer`)**와 **Wireshark**로 동시에 캡처하고, 같은 패킷끼리 값을 대조한 결과.
 
 | 파일 | 내용 |
 |---|---|
-| `sniff_wsl.log` | raw socket 스니퍼 출력 (`sudo ./http_sniffer eth0 -v`) |
-| `wsl.pcapng` | Wireshark 캡처 파일 |
+| `sniff_wsl.log` / `wsl.pcapng` | 1차 테스트 — 스니퍼 출력 / Wireshark 캡처 |
+| `sniff_wsl2.log` / `wsl2.pcapng` | 2차 테스트 — 스니퍼 출력 / Wireshark 캡처 |
+
+## 테스트 환경 (1·2차 공통)
+- Windows 11 (25H2) + WSL2 Ubuntu, 같은 PC — 스니퍼: WSL `eth0`(172.23.252.163)에서 `sudo ./http_sniffer eth0 -v`
+- Wireshark 4.6.9: `vEthernet (WSL (Hyper-V firewall))`, 캡처 필터 `tcp port 80`, seq·ack 절대값(Relative sequence numbers 해제)
+- 요청: curl 8.18.0 / 비교 방법: pcapng를 직접 파싱해 IP·포트·seq·ack·플래그·윈도·TTL·IP ID·길이를 패킷별로 대조
 
 ---
 
-## 1. 테스트 환경
+## 1차 테스트 비교 분석 (2026-11-19 22:25)
 
-| 항목 | 값 |
+### 요청
+| # | curl 명령 | 서버 IP |
+|---|---|---|
+| 1 | `curl --http1.0 http://httpbin.org/get` | 44.209.237.184 |
+| 2 | `curl --http1.1 http://httpbin.org/get` | 44.209.237.184 |
+| 3 | `curl -d "id=student&pw=1234" http://httpbin.org/post` | 3.221.253.123 |
+| 4 | `curl http://httpbin.org/status/404` | 44.209.237.184 |
+| 5 | `curl --http2-prior-knowledge http://nghttp2.org/` | 139.162.123.134 |
+
+### 패킷 대조
+| 항목 | 결과 |
 |---|---|
-| 일시 | 2026-11-19 22:25 (KST) |
-| OS | Windows 11 (25H2, build 26200) + WSL2 Ubuntu |
-| raw socket 캡처 | WSL `eth0` (172.23.252.163), `AF_PACKET / SOCK_RAW`, `-v` 옵션 |
-| Wireshark 캡처 | Wireshark 4.6.9 (Dumpcap), 인터페이스 `vEthernet (WSL (Hyper-V firewall))`, 필터 `tcp port 80` |
-| 요청 도구 | curl 8.18.0 |
-| seq/ack 비교 기준 | 절대값 (Wireshark Relative sequence numbers 해제) |
+| TCP 패킷 수 | 스니퍼 60 = Wireshark 60 |
+| IP·포트·seq·ack·플래그·윈도·TTL·IP ID | ✅ **60개 모두 일치** |
+| IP 전체 길이 | 59개 일치, 1개 차이 (아래 차이점) |
 
-## 2. 테스트 요청
+TCP 연결 설정 예시 (요청 1) — 스니퍼와 Wireshark 값 동일
 
-| # | curl 명령 | 서버 IP | HTTP 버전 |
+| 단계 | 방향 | seq / ack / 플래그 |
+|---|---|---|
+| SYN | 172.23.252.163:41876 → 44.209.237.184:80 | 1896994750 / 0 / SYN |
+| SYN-ACK | 44.209.237.184:80 → 172.23.252.163:41876 | 1297739449 / 1896994751 / SYN,ACK |
+| ACK | 172.23.252.163:41876 → 44.209.237.184:80 | 1896994751 / 1297739450 / ACK |
+
+### HTTP 해석 대조
+| 요청 | 스니퍼 해석 | Wireshark(패킷 원본) | 결과 |
 |---|---|---|---|
-| 1 | `curl --http1.0 http://httpbin.org/get` | 44.209.237.184 | 1.0 |
-| 2 | `curl --http1.1 http://httpbin.org/get` | 44.209.237.184 | 1.1 |
-| 3 | `curl -d "id=student&pw=1234" http://httpbin.org/post` | 3.221.253.123 | 1.1 |
-| 4 | `curl http://httpbin.org/status/404` | 44.209.237.184 | 1.1 |
-| 5 | `curl --http2-prior-knowledge http://nghttp2.org/` | 139.162.123.134 | 2 |
+| 1 | GET `/get` HTTP/1.0 → HTTP/1.0 200 OK (content-length 202) | `GET /get HTTP/1.0` / `HTTP/1.0 200 OK` | ✅ |
+| 2 | GET `/get` HTTP/1.1 → HTTP/1.1 200 OK | `GET /get HTTP/1.1` / `HTTP/1.1 200 OK` | ✅ |
+| 3 | POST `/post`, Body 18 bytes `id=student&pw=1234` → 200 OK | 같은 시작줄 + 같은 본문 | ✅ |
+| 4 | GET `/status/404` → 404 Not Found | `HTTP/1.1 404 Not Found` | ✅ |
+| 5 | HTTP/2 preface 감지, 요청 HPACK 6개(`:method GET` `:path /`), 응답 HPACK 14개(`:status 200`, `server nghttpx`…), DATA 6510 bytes를 패킷 3개에서 재조립 | `PRI * HTTP/2.0` + 압축 헤더(28·224 bytes) + HTML 본문 | ✅ (디코딩한 `content-length 6510` = DATA 길이 6510) |
 
-## 3. 비교 방법
-`wsl.pcapng`를 직접 파싱해서 각 TCP 패킷의 **출발지·목적지 IP, 포트, seq, ack, 플래그, 윈도, TTL, IP ID, IP 전체 길이, payload 길이**를 뽑고, `sniff_wsl.log`의 같은 패킷(출발지·포트·seq·ack·IP ID로 매칭)과 하나씩 대조했다.
+### 차이점
+| 패킷 | 스니퍼 | Wireshark | 원인 |
+|---|---|---|---|
+| nghttp2.org 응답 seq=36167763 | IP total_len 4396 | 0 | 여러 세그먼트가 합쳐진(offload) 패킷을 Windows 쪽은 길이 0으로 기록 — 캡처 위치 차이, 나머지 필드 일치 |
+
+**1차 결론:** 60개 패킷의 IP·TCP 값이 Wireshark와 모두 일치했고, HTTP/1.0·1.1·2의 메서드·URI·상태 코드·헤더를 정확히 해석했다.
 
 ---
 
-## 4. 결과 요약
+## 2차 테스트 비교 분석 (2026-11-20 18:02)
 
-| 항목 | raw socket 스니퍼 | Wireshark | 결과 |
+### 요청
+| # | curl 명령 | 서버 IP |
+|---|---|---|
+| 1 | `curl --http1.0 http://example.com/` | 104.20.23.154 |
+| 2 | `curl --http1.1 http://httpforever.com/` | 104.21.4.210 |
+| 3 | `curl http://example.com/ http://example.com/` | 104.20.23.154 |
+| 4 | `curl --http2-prior-knowledge http://nghttp2.org/httpbin/get` | 139.162.123.134 |
+| 5 | `curl --http2-prior-knowledge -d "id=student&pw=1234" http://nghttp2.org/httpbin/post` | 139.162.123.134 |
+| 6 | `curl --http2-prior-knowledge http://nghttp2.org/httpbin/status/404` | 139.162.123.134 |
+
+### 패킷 대조
+| 항목 | 결과 |
+|---|---|
+| TCP 패킷 수 | 스니퍼 87 = Wireshark 87 |
+| IP·포트·seq·ack·플래그·윈도·TTL·IP ID | ✅ **87개 모두 일치** |
+| IP 전체 길이 | 85개 일치, 2개 차이 (아래 차이점) |
+| HTTP 시작줄 | 원본 `GET / HTTP/1.0`, `GET / HTTP/1.1`×3, `HTTP/1.1 200 OK`×4 = 스니퍼 해석 ✅ |
+
+### HTTP 해석 대조
+| # | 결과 | 스니퍼 해석 | 새로 검증된 기능 |
 |---|---|---|---|
-| TCP 패킷 수 | 60 | 60 | ✅ 일치 |
-| IP·포트·seq·ack·플래그·윈도·TTL·IP ID | — | — | ✅ **60개 모두 일치** |
-| IP 전체 길이 | — | — | 59개 일치, **1개 차이** (5장 참고) |
-| 송신(OUT)·수신(IN) 구분 | 둘 다 출력 | 출발지 IP로 확인 | ✅ 일치 |
+| 1 | ✅ | `GET / HTTP/1.0` → `HTTP/1.1 200 OK`, `Connection: close`, Content-Length 없음 | 연결 종료(FIN)로 본문 끝 판단 (577 bytes) |
+| 2 | ✅ | `HTTP/1.1 200 OK`, `Transfer-Encoding: chunked` | 헤더가 세그먼트 2개에 걸침 → 모아서 출력 / chunked 본문이 패킷 4개에 걸쳐 완료 (11,526 bytes) |
+| 3 | ✅ | 연결 하나에 요청·응답 2쌍 (각 chunked 589 bytes) | keep-alive |
+| 4 | ⚠️ 서버 502 | 요청 HPACK 6개(`:path /httpbin/get`) / 응답 `:status 502` | HTTP/2 요청 경로 디코딩 |
+| 5 | ⚠️ 서버 502 | 요청 HPACK 8개(`:method POST`, `content-length 18`) + DATA `id=student&pw=1234` | HTTP/2 POST 본문 평문 확인 |
+| 6 | ⚠️ 서버 502 | 요청 `:path /httpbin/status/404` / 응답 `:status 502` | — (404 확인 못 함) |
 
-## 5. 항목별 비교
+chunked 바이트 검증: 청크 크기 + 청크 표시 = 스니퍼 누적값
+- httpforever.com: `0x2cf9`(11,513) + 13 = **11,526** ✅
+- example.com: `0x241`(577) + 12 = **589** ✅ → 스니퍼의 chunked 본문 바이트는 청크 표시를 포함한 전송량
 
-### 5-1. TCP 연결 설정 (요청 1, httpbin.org)
+HPACK 근거: 502 응답에서 디코딩한 `content-length: 129` = 실제 DATA 길이 129 ✅
 
-| 단계 | 방향 | raw socket 스니퍼 | Wireshark (절대 seq) |
+### 차이점
+| 패킷 | 스니퍼 | Wireshark | 원인 |
 |---|---|---|---|
-| SYN | 172.23.252.163:41876 → 44.209.237.184:80 | seq=1896994750 ack=0 [SYN] | seq=1896994750 ack=0 [SYN] |
-| SYN-ACK | 44.209.237.184:80 → 172.23.252.163:41876 | seq=1297739449 ack=1896994751 [SYN,ACK] | 동일 |
-| ACK | 172.23.252.163:41876 → 44.209.237.184:80 | seq=1896994751 ack=1297739450 [ACK] | 동일 |
+| httpforever 응답 seq=695202126 | IP total_len 7292 | 0 | 1차와 같은 offload 기록 차이 (payload 7240 등 나머지 일치) |
+| httpforever 응답 seq=695209366 | IP total_len 2948 | 0 | 위와 같음 (payload 2896) |
+| HTTP/2 요청 4~6 | `:status 502` | 같은 502 응답 | 응답이 `server: nghttpx`의 `502 Bad Gateway` → nghttp2.org 뒤쪽 httpbin 서비스 문제로 보임 (스니퍼 결함 아님), 404는 복구 후 재시도 필요 |
 
-연결 해제(FIN → ACK → FIN → ACK)도 5개 연결 모두 같은 값으로 확인됨.
-
-### 5-2. HTTP/1.x (요청 1~4)
-
-| 요청 | raw socket 스니퍼 해석 | Wireshark(패킷 원본) 시작줄 | 결과 |
-|---|---|---|---|
-| 1 요청 | Method GET / URI `/get` / Version HTTP/1.0 | `GET /get HTTP/1.0` | ✅ |
-| 1 응답 | HTTP/1.0 / 200 / OK, content-length 202 | `HTTP/1.0 200 OK` | ✅ |
-| 2 요청 | GET / `/get` / HTTP/1.1 | `GET /get HTTP/1.1` | ✅ |
-| 2 응답 | HTTP/1.1 / 200 / OK | `HTTP/1.1 200 OK` | ✅ |
-| 3 요청 | POST / `/post` / HTTP/1.1, Body 18 bytes `id=student&pw=1234` | `POST /post HTTP/1.1` + 본문 `id=student&pw=1234` | ✅ |
-| 3 응답 | HTTP/1.1 / 200 / OK, content-length 389 | `HTTP/1.1 200 OK` | ✅ |
-| 4 요청 | GET / `/status/404` / HTTP/1.1 | `GET /status/404 HTTP/1.1` | ✅ |
-| 4 응답 | HTTP/1.1 / 404 / Not Found | `HTTP/1.1 404 Not Found` | ✅ |
-
-헤더(Host, User-Agent, Accept, Content-Type, Content-Length 등)도 원본 패킷 내용과 같음.
-
-### 5-3. HTTP/2 (요청 5, nghttp2.org)
-
-| 항목 | raw socket 스니퍼 | Wireshark(패킷 원본) | 결과 |
-|---|---|---|---|
-| 버전 판별 | `PRI * HTTP/2.0` connection preface 감지 | 패킷에 `PRI * HTTP/2.0 … SM` 존재 | ✅ |
-| 요청 HEADERS | HPACK 디코딩 6개: `:method GET`, `:scheme http`, `:authority nghttp2.org`, `:path /`, `user-agent`, `accept` | 압축된 바이너리 28 bytes | ✅ (길이 일치) |
-| 응답 HEADERS | HPACK 디코딩 14개: `:status 200`, `content-type text/html`, `content-length 6510`, `server nghttpx` 등 | 압축된 바이너리 224 bytes | ✅ (길이 일치) |
-| 응답 DATA | 6510 bytes, 패킷 3개(1448+4344+960 bytes 구간)에 걸친 프레임을 재조립 | HTML 본문 (`<!DOCTYPE html>` …) | ✅ |
-| HPACK 정확성 근거 | 디코딩된 `content-length: 6510` = 실제 DATA 프레임 길이 6510 | — | ✅ |
-
-> Wireshark 화면의 HTTP2 헤더 해석(Decode As HTTP2)과 대조한 스크린샷은 보고서에 별도 첨부 예정.
+**2차 결론:** 다른 서버에서도 87개 패킷이 Wireshark와 모두 일치했고, FIN으로 끝나는 본문·세그먼트에 걸친 헤더·chunked 본문·keep-alive·HTTP/2 POST를 정상 해석했다.
 
 ---
 
-## 6. 차이점 분석
-
-| 패킷 | raw socket 스니퍼 | Wireshark | 원인 |
-|---|---|---|---|
-| nghttp2.org 응답 중간 패킷 (seq=36167763) | IP total_len = **4396** | IP total_len = **0** | 1500바이트 패킷 3개(1448×3 = 4344 bytes)가 하나로 합쳐진(segmentation offload) 패킷. Windows 쪽 캡처에는 길이 필드가 0으로 기록되고, WSL 커널은 합친 뒤 실제 길이를 넣음. **캡처 위치 차이**이며 나머지 필드(IP·포트·seq·ack·플래그)는 일치 |
-
-기타 확인 사항
-- **DNS(UDP 53)는 캡처되지 않음.** WSL의 DNS 터널링(dnsTunneling, Windows 11 22H2 이상 기본값)으로 DNS 질의가 eth0을 거치지 않기 때문 → DNS 담당 테스트 시 참고
-- 스니퍼 경고(`!!` TCP gap, HPACK 실패, 버퍼 넘침) **0건**
-
-## 7. 결론
-raw socket 스니퍼는 실제 HTTP 서버(httpbin.org, nghttp2.org)와의 통신에서 **송신·수신 패킷을 모두 캡처**했고, **IP·TCP 헤더 값이 Wireshark와 60개 패킷 전부 일치**했다.
-HTTP/1.0·1.1·2를 하나의 프로그램에서 자동 판별했으며, **메서드·URI·상태 코드·주요 헤더**를 HTTP/1.x는 텍스트 파싱, HTTP/2는 HPACK 디코딩으로 정확히 복원했다.
-유일한 차이(IP 전체 길이 1건)는 캡처 위치에 따른 offload 표시 차이로 분석 결과에는 영향이 없다.
+## 종합
+| 검증 항목 | 1차 | 2차 |
+|---|---|---|
+| IP·TCP 헤더 Wireshark 일치 | ✅ 60/60 | ✅ 87/87 |
+| 송수신·TCP 연결설정·해제 | ✅ | ✅ |
+| HTTP/1.0·1.1 메서드·URI·상태 코드·헤더 | ✅ | ✅ |
+| 본문 끝 판단 | Content-Length ✅ | FIN ✅ · chunked ✅ |
+| 세그먼트 분할 헤더·keep-alive | — | ✅ |
+| HTTP/2 프레임·HPACK | ✅ GET 200 | ✅ GET·POST 요청, 502 응답 |
+| HTTP/2 404 | — | ⏳ 서버 502로 재시도 필요 |
