@@ -53,3 +53,9 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# macOS 폴더 설정 파일 무시
+.DS_Store
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store
