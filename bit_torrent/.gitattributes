@@ -1,0 +1,4 @@
+# WSL 에서 실행하는 파일은 Windows 에서 클론해도(core.autocrlf=true) LF 로 유지
+# CRLF 로 바뀌면 bash 가 $'\r': command not found 로 실행하지 못함
+*.sh      text eol=lf
+Makefile  text eol=lf

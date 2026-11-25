@@ -1,0 +1,12 @@
+# 빌드 결과물 - 각자 make 로 생성하므로 올리지 않음
+# (*.o 는 레포 최상위 .gitignore 에서도 제외됨)
+*.o
+/bt_sniffer
+/test/bt_testgen
+
+# 실제 토렌트 패킷 원본 - 용량(약 43MB)과 공인 IP 때문에 공개 레포에 올리지 않음
+# (scripts/capture.sh 가 만드는 captures/run_*/bt_real.pcap 도 포함)
+/captures/**/bt_real.pcap
+
+# Python 캐시
+__pycache__/
