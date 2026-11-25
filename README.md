@@ -10,8 +10,8 @@
 
 | 폴더 | 프로토콜 | 담당 (GitHub) | 실행 파일 | 자세한 설명 |
 | --- | --- | --- | --- | --- |
-| [HTTP_Code/http_sniffer](HTTP_Code/http_sniffer/) | HTTP/1.0 · 1.1 · 2 (HPACK) | healer-tanker | `http_sniffer` | [README.md](HTTP_Code/http_sniffer/README.md), [README2.md](HTTP_Code/http_sniffer/README2.md) (테스트 명령 설명) |
-| [HTTP_Test_Result](HTTP_Test_Result/) | HTTP 테스트 결과 | healer-tanker | - | [README.md](HTTP_Test_Result/README.md) (1·2차 테스트, Wireshark 패킷별 대조) |
+| [DongGyu_HTTP/HTTP_Code/http_sniffer](DongGyu_HTTP/HTTP_Code/http_sniffer/) | HTTP/1.0 · 1.1 · 2 (HPACK) | healer-tanker | `http_sniffer` | [README.md](DongGyu_HTTP/HTTP_Code/README.md) (파일별 역할·담당 버전, 실행 방법) |
+| [DongGyu_HTTP/HTTP_RESULT](DongGyu_HTTP/HTTP_RESULT/) | HTTP 테스트 결과 | healer-tanker | - | [README.md](DongGyu_HTTP/HTTP_RESULT/README.md) (HTTP/1.0·1.1·2 최종 테스트, Wireshark 패킷별 대조) |
 | [Minho_DNS_Traceroute](Minho_DNS_Traceroute/) | DNS · ICMP(Traceroute) | MINHO2022 | `dns_capture`, `trace_capture` | [README.md](Minho_DNS_Traceroute/README.md) (용어 설명, 발표 예상 질문 포함) |
 | [Email-Protocol](Email-Protocol/) | SMTP · POP3 · IMAP | Cyclaret | `mail_capture`, `mail_server` + Python GUI·송수신기 | [README.md](Email-Protocol/README.md) |
 | [bit_torrent](bit_torrent/) | BitTorrent (Peer Wire · 트래커 · DHT) | Rael0515 | `bt_sniffer`, `test/bt_testgen` + 캡처·검증 스크립트 `scripts/` | [README.md](bit_torrent/README.md), [report_tip.md](bit_torrent/report_tip.md) (보고서 작성 팁) |
@@ -48,10 +48,12 @@ sudo apt install -y tcpdump             # 캡처 원본(pcap) 저장이 필요�
 ### HTTP
 
 ```bash
-cp -r HTTP_Code/http_sniffer ~/http_sniffer && cd ~/http_sniffer   # /mnt/c 실행 권한 문제를 피하려고 WSL 홈에서 실행
+cp -r DongGyu_HTTP/HTTP_Code/http_sniffer ~/http_sniffer && cd ~/http_sniffer   # /mnt/c 실행 권한 문제를 피하려고 WSL 홈에서 실행
 make
-sudo ./http_sniffer eth0 -v | tee sniff_wsl.log     # 터미널 1
-curl --http1.1 http://httpbin.org/get              # 터미널 2
+sudo ./http_sniffer eth0 -v 80                                     # 터미널 1
+curl -v --http1.0 http://www.example.com/                          # 터미널 2 (HTTP/1.0)
+curl -v --http1.1 http://httpforever.com/                          # 터미널 2 (HTTP/1.1)
+curl -v --http2-prior-knowledge -o /dev/null http://nghttp2.org/   # 터미널 2 (HTTP/2)
 ```
 
 ### DNS · Traceroute
@@ -98,7 +100,7 @@ sudo bash scripts/capture.sh lo                     # 또는 tcpdump 저장까�
 - Windows 의 Wireshark 로 WSL `eth0` 트래픽을 보려면 `vEthernet (WSL (Hyper-V firewall))` 인터페이스를 고릅니다. WSL 의 `lo` 는 Windows 에서 보이지 않으므로 WSL 안에서 `sudo tcpdump -i lo -w 파일.pcap` 으로 저장한 뒤 Windows 에서 엽니다.
 - 이 프로그램들은 Seq/Ack 실제 값을 출력합니다. Wireshark 에서 편집 → 설정 → Protocols → TCP → Relative sequence numbers 를 끄고 비교합니다.
 - Wireshark 는 기본 설정에서 체크섬을 검증하지 않습니다(`[unverified]`). 검증을 켜거나 tcpdump `-v` 로 보면 송신 패킷의 체크섬이 "incorrect" 로 나오는데, 체크섬 계산을 네트워크 장치에 맡기는 기능(offload) 때문이며 오류가 아닙니다.
-- 수신 패킷 길이가 MTU(1500)보다 크게 보이는 것은 여러 세그먼트를 합쳐 올리는 기능(GRO 등) 때문입니다. HTTP 1·2차 테스트에서는 이런 패킷을 Wireshark(Windows 쪽 캡처)가 IP 전체 길이 0 으로 기록했습니다.
+- 수신 패킷 길이가 MTU(1500)보다 크게 보이는 것은 여러 세그먼트를 합쳐 올리는 기능(GRO 등) 때문입니다. HTTP 최종 테스트(HTTP/1.1 응답)에서는 이런 패킷을 Wireshark(Windows 쪽 캡처)가 IP 전체 길이 0 으로 기록했습니다.
 - HTTPS·TLS 구간(HTTP 의 https, 이메일 외부 실습, HTTPS 트래커 등)은 암호화되어 내용을 해석할 수 없습니다.
 - `/mnt/c` (Windows 폴더)에서 빌드·실행할 때 권한 문제가 생기면 폴더를 WSL 홈으로 복사해서 실행합니다.
 
@@ -106,7 +108,7 @@ sudo bash scripts/capture.sh lo                     # 또는 tcpdump 저장까�
 
 | 파트 | 캡처 결과 | 검증·설명 자료 |
 | --- | --- | --- |
-| HTTP | `HTTP_Test_Result/sniff_wsl*.log`, `wsl*.pcapng` | [HTTP_Test_Result/README.md](HTTP_Test_Result/README.md) |
+| HTTP | `DongGyu_HTTP/HTTP_RESULT/` (버전별 curl·Wireshark·미니 Wireshark 스크린샷, `pcapng/HTTP*_wireshark.pcapng`) | [DongGyu_HTTP/HTTP_RESULT/README.md](DongGyu_HTTP/HTTP_RESULT/README.md) |
 | DNS · Traceroute | `Minho_DNS_Traceroute/dns-trace.pcap`, 실행·검증 스크린샷 6장 | [Minho_DNS_Traceroute/README.md](Minho_DNS_Traceroute/README.md) 5~7장 |
 | 이메일 | `Email-Protocol/첨부사진/` (터미널, Wireshark IMAP·POP3, SMTP·IMAP·POP3 캡처, 송수신 메일 화면 7장) | [Email-Protocol/README.md](Email-Protocol/README.md) 4장 |
 | BitTorrent | `bit_torrent/captures/` (분석 결과 txt, 루프백 pcap, PNG, 보고서용 `전달용/`). 실제 토렌트 pcap 은 용량과 공인 IP 때문에 레포에 올리지 않음 | [bit_torrent/report_tip.md](bit_torrent/report_tip.md), [bit_torrent/README.md](bit_torrent/README.md) 4-4 장 |
@@ -116,9 +118,9 @@ sudo bash scripts/capture.sh lo                     # 또는 tcpdump 저장까�
 ```text
 NetworkProject/
 ├── README.md                  이 문서 (팀 전체 안내)
-├── HTTP_Code/
-│   └── http_sniffer/          HTTP 스니퍼 소스 (main.c, http1.c, http2.c, hpack.c)
-├── HTTP_Test_Result/          HTTP 1·2차 테스트 로그, Wireshark pcapng, 대조 분석
+├── DongGyu_HTTP/
+│   ├── HTTP_Code/             HTTP 스니퍼 소스 (http_sniffer/: main.c, http1.c, http2.c, hpack.c)
+│   └── HTTP_RESULT/           HTTP/1.0·1.1·2 테스트 스크린샷, Wireshark pcapng, 대조 결과
 ├── Minho_DNS_Traceroute/      DNS·Traceroute 소스, 검증 스크린샷, dns-trace.pcap
 ├── Email-Protocol/            메일 서버·캡처 (C), 송수신기·캡처 GUI (Python)
 └── bit_torrent/               BitTorrent 분석기 소스, 테스트 생성기, 캡처·검증 스크립트, 캡처 결과, 보고서 팁
