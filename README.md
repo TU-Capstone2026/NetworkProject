@@ -1,197 +1,125 @@
-# BitTorrent 패킷 분석기 (bt_sniffer)
+# NetworkProject
 
-컴퓨터네트워크 설계 3팀 · BitTorrent 담당 류상진
-Linux · C · Raw Socket(AF_PACKET / SOCK_RAW)
+컴퓨터네트워크 설계 3팀 · Raw Socket 패킷 분석기
 
-네트워크 인터페이스에서 **송신·수신 패킷을 모두 캡처**하고, IP / TCP / UDP 헤더와 BitTorrent 응용 계층(Peer Wire, 트래커, DHT)을 해석해서 출력합니다.
+팀원이 프로토콜을 하나씩 맡아, 리눅스 Raw Socket(`AF_PACKET` / `SOCK_RAW`)으로 송신·수신 패킷을 직접 캡처하고 헤더와 응용 계층을 해석하는 프로그램을 만들었습니다. 결과는 파트별로 Wireshark·tcpdump와 표준 도구(curl, dig, traceroute 등)의 출력, 또는 캡처 GUI 로 확인했습니다(2장 표의 "결과 확인·검증").
 
 ---
 
-## 1. 파일 구성
+## 1. 파트별 구성
 
-| 파일 | 역할 |
-|---|---|
-| `main.c` | Raw Socket 생성, 캡처 루프, 송수신 구분, Ethernet → IPv4 → TCP/UDP 헤더 해석, 공통 출력, 통계 |
-| `common.h` | 패킷 정보 구조체 `struct pkt_info` (나중에 팀 공용 레포에 합칠 때 이 형식만 맞추면 됨) |
-| `bittorrent.c / .h` | BitTorrent 분석 모듈 (핸드셰이크, 메시지, HTTP/UDP 트래커, DHT) |
-| `bencode.c / .h` | BitTorrent 데이터 형식(bencode) 파서 |
-| `Makefile` | 빌드 |
-| `test/bt_testgen.py` | 루프백 테스트 트래픽 생성기 (Python 3 기본 라이브러리만 사용) |
-| `docs/sample_output_lo.txt` | 루프백 테스트 실제 출력 결과 |
+| 폴더 | 프로토콜 | 담당 (GitHub) | 실행 파일 | 자세한 설명 |
+| --- | --- | --- | --- | --- |
+| [HTTP_Code/http_sniffer](HTTP_Code/http_sniffer/) | HTTP/1.0 · 1.1 · 2 (HPACK) | healer-tanker | `http_sniffer` | [README.md](HTTP_Code/http_sniffer/README.md), [README2.md](HTTP_Code/http_sniffer/README2.md) (테스트 명령 설명) |
+| [HTTP_Test_Result](HTTP_Test_Result/) | HTTP 테스트 결과 | healer-tanker | - | [README.md](HTTP_Test_Result/README.md) (1·2차 테스트, Wireshark 패킷별 대조) |
+| [Minho_DNS_Traceroute](Minho_DNS_Traceroute/) | DNS · ICMP(Traceroute) | MINHO2022 | `dns_capture`, `trace_capture` | [README.md](Minho_DNS_Traceroute/README.md) (용어 설명, 발표 예상 질문 포함) |
+| [Email-Protocol](Email-Protocol/) | SMTP · POP3 · IMAP | Cyclaret | `mail_capture`, `mail_server` + Python GUI·송수신기 | [README.md](Email-Protocol/README.md) |
+| [bit_torrent](bit_torrent/) | BitTorrent (Peer Wire · 트래커 · DHT) | Rael0515 | `bt_sniffer`, `test/bt_testgen` + 캡처·검증 스크립트 `scripts/` | [README.md](bit_torrent/README.md), [report_tip.md](bit_torrent/report_tip.md) (보고서 작성 팁) |
 
-## 2. 빌드
+## 2. 파트별 비교
+
+| | HTTP | DNS · Traceroute | 이메일 | BitTorrent |
+| --- | --- | --- | --- | --- |
+| 언어 | C | C | C (캡처·서버) + Python (송수신·GUI) | C |
+| 전송 계층 | TCP | UDP / ICMP | TCP (외부 실습은 TLS) | TCP · UDP |
+| 실행 환경 | WSL2 Ubuntu | WSL2 Ubuntu | Linux 또는 macOS (macOS 는 libpcap 사용) | WSL2 Ubuntu |
+| 캡처 인터페이스 | `eth0` | `eth0` | 로컬 `lo`(macOS `lo0`), 외부는 실제 인터페이스 | 테스트 `lo`, 실제 토렌트 `eth0` |
+| 트래픽 발생 | curl | dig, traceroute | `sender.py` / `receiver.py` (로컬 서버, Gmail) | `test/bt_testgen`, aria2c |
+| 결과 확인·검증 | Wireshark pcapng 와 패킷별 대조 | dig·traceroute 출력, Wireshark | 캡처 GUI, Wireshark (IMAP·POP3) | tcpdump pcap·Wireshark 와 개수·필드 대조, pcap 재조립 검증 |
+
+공통 구현 방식은 다음과 같습니다.
+
+- `socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))` 로 링크 계층 프레임을 받고, `recvfrom()` 이 돌려주는 `sll_pkttype` 이 `PACKET_OUTGOING` 이면 송신으로 구분합니다.
+- Ethernet → IPv4 → TCP/UDP(ICMP) → 응용 계층 순서로 헤더를 직접 해석합니다.
+- TCP 를 쓰는 파트(HTTP, 이메일, BitTorrent)는 연결 설정(SYN → SYN+ACK → ACK)과 해제(FIN·ACK·RST)를 함께 보여 줍니다.
+- Raw Socket 은 root 권한이 필요하므로 캡처 프로그램은 `sudo` 로 실행합니다.
+
+## 3. 빠른 시작 (WSL2 Ubuntu 기준)
+
+공통 준비입니다.
 
 ```bash
-sudo apt install build-essential     # gcc, make 가 없을 때만
-make                                 # → ./bt_sniffer 생성
+sudo apt install -y build-essential     # gcc, make
+sudo apt install -y tcpdump             # 캡처 원본(pcap) 저장이 필요할 때
 ```
 
-## 3. 실행 옵션
+모든 파트가 같은 순서로 동작합니다. 터미널 1 에서 캡처 프로그램을 먼저 켜고, 터미널 2 에서 트래픽을 발생시킨 뒤, 터미널 1 에서 `Ctrl+C` 로 끝냅니다. 자세한 옵션과 결과 해석은 각 폴더의 README 를 봅니다.
 
-```
-sudo ./bt_sniffer [-i 인터페이스] [-p 포트] [-a] [-v] [-d] [-c 개수]
-  -i IFACE  캡처할 인터페이스 (lo, eth0, enp0s3, wlan0 ...). 생략하면 전체
-  -p PORT   BitTorrent 클라이언트 리슨 포트 (6881~6889 는 기본 포함)
-  -a        BitTorrent 가 아닌 TCP/UDP 패킷도 한 줄 요약으로 출력
-  -v        상세 출력 (piece 데이터 이어짐, 재전송, 순수 ACK 포함)
-  -d        lo 에서 같은 패킷이 송신/수신으로 두 번 잡히는 것을 한 번만 출력
-  -c N      BitTorrent 패킷 N개를 출력하면 종료
-  Ctrl+C    종료 → 캡처 통계 출력
-```
-
-- Raw Socket 은 root 권한이 필요하므로 **반드시 `sudo`** 로 실행합니다.
-- 결과를 파일로 남기려면 `| tee 결과.txt` 를 붙입니다. 출력은 줄 단위로 바로 저장됩니다.
-
----
-
-## 4. 캡처 방법
-
-### 4-1. 루프백 테스트 (먼저 이것부터, 매번 같은 결과)
-
-실제 토렌트 없이 값이 정해진 BitTorrent 패킷을 `127.0.0.1` 로 주고받습니다. 보고서 캡처화면과 Wireshark 대조용으로 가장 확실합니다.
+### HTTP
 
 ```bash
-# 터미널 1 - 분석기
-sudo ./bt_sniffer -i lo -d | tee result_lo.txt
-
-# 터미널 2 - Wireshark (선택) : Loopback: lo 선택 후 캡처 시작
-sudo wireshark            # GUI 가 없으면: sudo tcpdump -i lo -w bt_lo.pcap
-
-# 터미널 3 - 테스트 트래픽 발생 (sudo 필요 없음)
-python3 test/bt_testgen.py
+cp -r HTTP_Code/http_sniffer ~/http_sniffer && cd ~/http_sniffer   # /mnt/c 실행 권한 문제를 피하려고 WSL 홈에서 실행
+make
+sudo ./http_sniffer eth0 -v | tee sniff_wsl.log     # 터미널 1
+curl --http1.1 http://httpbin.org/get              # 터미널 2
 ```
 
-끝나면 터미널 1 에서 `Ctrl+C` 를 누릅니다. 발생하는 트래픽은 다음과 같습니다.
-
-| 순서 | 내용 | 확인할 수 있는 것 |
-|---|---|---|
-| 1 | TCP 6881 Peer Wire | 3-way handshake, 핸드셰이크(Info Hash, Peer ID), bitfield, 확장 핸드셰이크, interested → unchoke → request → piece(5개 세그먼트로 나뉨), 두 세그먼트로 쪼개진 have, port, request+cancel, keep-alive, choke, FIN 연결 해제 |
-| 2 | TCP 6969 HTTP 트래커 | announce 요청 파라미터, bencode 응답(interval, 시더/리처 수, 피어 목록) |
-| 3 | UDP 6969 UDP 트래커 | connect → announce → scrape, 잘못된 connection_id → error |
-| 4 | UDP 6881↔6882 DHT | ping, find_node, get_peers, announce_peer, error |
-| 5 | TCP 6881 암호화 흉내 | 평문 핸드셰이크 없이 무작위 바이트만 오가는 연결 → "평문 핸드셰이크 아님" 경고 |
-
-> **lo 에서 `-d` 를 쓰는 이유:** 루프백은 커널이 같은 패킷을 "송신 사본"과 "수신 사본"으로 두 번 넘겨줍니다. `-d` 없이 실행하면 모든 패킷이 `[송신]`, `[수신]` 으로 두 번씩 나옵니다. 송수신을 둘 다 잡는다는 걸 보여줄 때는 오히려 `-d` 없이 찍는 것도 좋습니다. Wireshark 는 lo 에서 한 번만 보여주므로, 개수를 비교할 때는 `-d` 를 씁니다.
-
-### 4-2. 실제 BitTorrent 트래픽
-
-합법적인 리눅스 배포판 토렌트를 사용합니다. **Debian netinst** 를 추천합니다. 공식 트래커가 평문 HTTP(`http://bttracker.debian.org:6969/announce`)라 트래커 요청·응답 내용까지 볼 수 있습니다.
-
-1. `.torrent` 받기: `https://cdimage.debian.org/debian-cd/current/amd64/bt-cd/` 에서 `debian-…-amd64-netinst.iso.torrent`
-2. 인터페이스 이름 확인: `ip -br a` (VirtualBox 는 보통 `enp0s3`, 유선 `eth0`/`enpXsY`, 무선 `wlan0`/`wlpXsY`)
-3. **분석기를 먼저 켜고** 토렌트를 시작합니다. 핸드셰이크는 연결 시작 순간에만 오기 때문입니다.
-
-**방법 A - aria2c (명령줄, 가장 간단)**
-
-aria2 는 피어 연결에 TCP 만 사용하고, DHT 와 UDP 트래커도 기본으로 켜져 있습니다.
+### DNS · Traceroute
 
 ```bash
-sudo apt install aria2
+cd Minho_DNS_Traceroute
+gcc -std=c11 -Wall -Wextra -Wpedantic -o dns_capture dns_capture.c
+gcc -std=c11 -Wall -Wextra -Wpedantic -o trace_capture trace_capture.c
 
-# 터미널 1
-sudo ./bt_sniffer -i enp0s3 -p 6881 | tee result_real.txt
+sudo ./dns_capture                                    # 터미널 1 ("Listening on eth0" 확인 후)
+dig @1.1.1.1 example.com A +notcp +tries=1 +time=3    # 터미널 2
 
-# 터미널 2
-aria2c --listen-port=6881 --dht-listen-port=6881 --disable-ipv6=true \
-       --bt-require-crypto=false --seed-time=0 debian-*-amd64-netinst.iso.torrent
+sudo ./trace_capture                                  # 터미널 1
+traceroute -n -I -N 1 -q 1 -w 1 1.1.1.1               # 터미널 2
 ```
 
-1~2분 정도 받다가 `Ctrl+C` 로 멈춰도 핸드셰이크, 메시지, 트래커, DHT 가 충분히 잡힙니다.
+### 이메일 (로컬 평문 실습)
 
-**방법 B - qBittorrent (GUI)**
+Python 3.9 이상과 Tkinter 가 필요합니다. Gmail 외부 실습은 [Email-Protocol/README.md](Email-Protocol/README.md) 3장을 봅니다.
 
-메뉴 이름은 버전·언어에 따라 조금 다를 수 있습니다.
-- 도구 → 옵션 → 연결: 피어 연결 프로토콜 = **TCP** (uTP 끄기), 수신 포트 = **6881** 고정
-- 도구 → 옵션 → BitTorrent: 암호화 모드 = **암호화 사용 안 함 (Disable encryption)**
-- 실행: `sudo ./bt_sniffer -i <인터페이스> -p 6881`
-
-**실제 트래픽에서 주의할 점**
-- **핸드셰이크 대신 "평문 핸드셰이크 아님"만 보이면** 암호화(MSE/PE) 연결입니다. 클라이언트는 보통 암호화를 먼저 시도하고, 상대가 암호화를 요구하면 평문으로는 연결되지 않습니다. 피어가 여러 명이면 그중 일부만 평문입니다.
-- **학교·기숙사망은 P2P 를 막는 경우가 많습니다.** 트래커 요청만 보이고 피어 연결이 안 되면 다른 네트워크(예: 휴대폰 핫스팟)에서 테스트합니다.
-- **VM(NAT)** 에서는 외부 피어가 먼저 접속해 올 수 없습니다. 그래도 내가 먼저 거는 연결(송신 핸드셰이크 → 수신 핸드셰이크)은 정상적으로 보입니다.
-- IPv6 피어는 분석하지 않으므로 aria2 에 `--disable-ipv6=true` 를 넣었습니다.
-
-### 4-3. WSL2 에서 할 때 (기본 NAT 네트워크 기준)
-
-- WSL2 는 실제 리눅스 커널이라 AF_PACKET Raw Socket 이 `sudo` 로 동작합니다. 루프백 테스트(4-1)는 그대로 됩니다.
-- WSL 의 `eth0` 에는 WSL 안의 프로그램 트래픽만 보입니다. 그래서 실제 토렌트는 Windows 의 qBittorrent 가 아니라 **WSL 안에서 aria2c** 로 실행합니다.
-- Windows 의 Wireshark 로는 WSL 의 lo 가 안 보입니다. WSL 안에서 저장한 뒤 Windows 에서 엽니다.
-  ```bash
-  sudo apt install tcpdump
-  sudo tcpdump -i lo -w /mnt/c/Users/<윈도우사용자명>/Desktop/bt_lo.pcap
-  ```
-
-### 4-4. Wireshark 와 대조하는 방법
-
-- 분석기와 Wireshark 로 **같은 인터페이스를 동시에** 캡처합니다.
-- 디스플레이 필터: `bittorrent || bt-dht || bt-tracker || http.request.uri contains "info_hash"`
-- **Seq/Ack:** Wireshark 는 기본으로 상대 번호(1, 2, …)를 보여줍니다. 이 프로그램은 실제 값(raw)을 출력하므로 TCP 항목의 `Sequence Number (raw)` 와 비교합니다. 또는 편집 → 설정 → Protocols → TCP → *Relative sequence numbers* 를 끕니다.
-- 포트가 6881~6889 가 아니면 Wireshark 가 BitTorrent 로 표시하지 않을 수 있습니다. 이때는 패킷 우클릭 → *Decode As…* → BitTorrent 를 지정합니다.
-- UDP 트래커의 Transaction ID 를 Wireshark 는 10진수로 보여줍니다. 이 프로그램은 `0x0000a001 (40961)` 처럼 둘 다 출력합니다.
-
-**직접 대조한 결과 (tshark 4.2.2, 루프백 테스트)**
-- 일치: TCP Seq/Ack raw 값, 핸드셰이크 Info Hash·Peer ID, 메시지 종류 순서(bitfield+extended / interested / unchoke / request / piece / have / port / request+cancel / keep-alive / not interested / choke), request·have 의 index/begin/length, UDP 트래커 action·transaction_id·interval·leechers·seeders·피어 목록·에러 메시지, DHT 메시지 종류·Transaction ID·Node ID·노드 목록
-- 차이 ①: Wireshark 는 HTTP 트래커 응답을 일반 HTTP 로만 보여줍니다. 이 프로그램은 본문 bencode 까지 해석합니다(interval, complete, incomplete, peers).
-- 차이 ②: 잘못된 connection_id 로 보낸 announce 요청을 Wireshark 는 "Connection Response" 로 잘못 해석했습니다. 이 프로그램은 announce 요청으로 맞게 해석했습니다.
-
----
-
-## 5. 출력 예시 (일부, 전체는 docs/sample_output_lo.txt)
-
-```
-------------------------------------------------------------------------
-#4 [22:30:10.097] [송신] BitTorrent Peer Wire - Handshake
- [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0xfca2  TotalLen=120  Proto=TCP(6)
- [TCP] 59788 -> 6881  Seq=4259413498  Ack=2257395806  Flags=[PSH,ACK]  Win=64  HdrLen=32  Len=68
- [TCP 연결 설정] 이 연결의 3-way handshake (앞서 캡처된 패킷)
-       #1 [22:30:09.947] [송신] 59788 -> 6881  Flags=[SYN]  Seq=4259413497  (1단계 SYN: 연결 요청)
-       #2 [22:30:09.947] [송신] 6881 -> 59788  Flags=[SYN,ACK]  Seq=2257395805  Ack=4259413498  (2단계 SYN+ACK: 연결 요청 수락)
-       #3 [22:30:09.947] [송신] 59788 -> 6881  Flags=[ACK]  Seq=4259413498  Ack=2257395806  (3단계 ACK: 연결 확립)
- [APP] BitTorrent Handshake
-       pstrlen    : 19
-       pstr       : "BitTorrent protocol"
-       Reserved   : 00 00 00 00 00 10 00 05  → [Extension Protocol(BEP 10)] [Fast Extension(BEP 6)] [DHT(BEP 5)]
-       Info Hash  : 5a27bfa7070c7f62de1c67dead9ddb5b97b6acd1  (토렌트 식별값, info 딕셔너리의 SHA-1)
-       Peer ID    : -qB4650-TEAM3CLIENT1
-       Client     : qBittorrent (버전 코드 4.6.5.0)
-------------------------------------------------------------------------
-#14 [22:30:10.699] [송신] BitTorrent Peer Wire
- [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x466d  TotalLen=1065  Proto=TCP(6)
- [TCP] 6881 -> 59788  Seq=2257396008  Ack=4259413588  Flags=[PSH,ACK]  Win=64  HdrLen=32  Len=1013
- [APP] BitTorrent Message: Piece (id=7, len=16393) - 요청한 블록 데이터 전송
-       Index=0  Begin=0  블록 크기=16384 bytes (이 세그먼트에 1000 bytes)
-       → 나머지 15384 bytes 는 다음 세그먼트로 이어짐
+```bash
+cd Email-Protocol
+make -B
+sudo ./mail_capture lo | python3 capture_gui.py    # 터미널 1 (macOS 는 lo0)
+python3 receiver.py                                # 터미널 2
+python3 sender.py                                  # 터미널 3, 본문 한 줄 입력
 ```
 
----
+### BitTorrent (루프백 테스트)
 
-## 6. 분석 항목 정리 (보고서용)
+실제 토렌트 캡처는 [bit_torrent/README.md](bit_torrent/README.md) 4-2 장과 [report_tip.md](bit_torrent/report_tip.md) 를 봅니다.
 
-| 계층 | 분석 필드 |
-|---|---|
-| 링크 | 송신/수신 방향(`sll_pkttype`), EtherType, VLAN 태그 |
-| IPv4 | 출발지/목적지 IP, TTL, Identification, Total Length, Protocol, 조각화 여부 |
-| TCP | 출발지/목적지 포트, Seq, Ack, Flags, Window, 헤더 길이, 데이터 길이 / **연결 설정(SYN → SYN+ACK → ACK), 데이터 전송, 연결 해제(FIN·ACK·RST)** |
-| UDP | 출발지/목적지 포트, Length |
-| Peer Wire 핸드셰이크 | pstrlen, pstr, Reserved 확장 비트(BEP 10/6/5), Info Hash, Peer ID → 클라이언트 추정 |
-| Peer Wire 메시지 | 길이, ID, 이름·의미 / have·request·piece·cancel 의 index·begin·length / bitfield 보유 조각 수 / port / Extended Handshake(m, v, p, metadata_size, yourip) / keep-alive |
-| HTTP 트래커 | announce·scrape 요청 파라미터(info_hash, peer_id, port, uploaded, downloaded, left, event, compact, numwant), 응답(interval, complete, incomplete, peers) |
-| UDP 트래커 | action, connection_id, transaction_id, announce 필드, 응답의 interval·leechers·seeders·피어, scrape, error |
-| DHT | y(질의/응답/오류), q(메서드), Transaction ID, Node ID, info_hash/target, token, port, nodes, values, 오류 코드, 질의-응답 매칭 |
+```bash
+cd bit_torrent
+make
+sudo ./bt_sniffer -i lo -d | tee -i result_lo.txt   # 터미널 1
+./test/bt_testgen                                   # 터미널 2 (sudo 필요 없음)
 
-## 7. 구현 포인트 (발표·보고서용)
+sudo bash scripts/capture.sh lo                     # 또는 tcpdump 저장까지 한 번에 (결과: captures/run_<날짜_시각>/)
+```
 
-1. **포트가 아니라 내용으로 판별합니다.** 요즘 클라이언트는 포트를 무작위로 쓰기 때문입니다.
-   - 핸드셰이크: 첫 바이트 `19` + `"BitTorrent protocol"`
-   - UDP 트래커: 고정값 `0x41727101980` + transaction_id 추적
-   - DHT: bencode 딕셔너리의 `y`, `t` 키
-2. **연결별 메시지 경계를 추적합니다.** Peer Wire 메시지(`[길이][ID][내용]`)는 TCP 세그먼트 경계와 맞지 않습니다. 그래서 연결(방향)마다 *다음 Seq*, *현재 메시지의 남은 길이*, *세그먼트에 걸친 헤더 조각* 을 기억합니다. 16KB piece 가 여러 세그먼트로 나뉘어도, 헤더가 두 세그먼트에 쪼개져도 해석합니다. 재전송은 Seq 로 걸러내고, 세그먼트를 놓치면 다음 메시지 시작을 다시 찾습니다.
-3. **3-way handshake 를 소급해서 출력합니다.** SYN 시점에는 BitTorrent 인지 알 수 없습니다. 그래서 모든 SYN/SYN+ACK/ACK 를 기록해 두었다가, 핸드셰이크로 확인되는 순간 그 연결의 연결 설정 과정을 함께 출력합니다.
-4. **예외 패킷을 처리합니다.** 모든 길이를 패킷 끝과 비교해서 짧거나 잘린 패킷은 건너뜁니다. 무작위·변형 패킷 70만 건을 AddressSanitizer 로 돌려 메모리 오류 0건을 확인했습니다.
+## 4. WSL2 에서 캡처할 때 공통 주의 사항
 
-## 8. 한계
+- Windows 의 Wireshark 로 WSL `eth0` 트래픽을 보려면 `vEthernet (WSL (Hyper-V firewall))` 인터페이스를 고릅니다. WSL 의 `lo` 는 Windows 에서 보이지 않으므로 WSL 안에서 `sudo tcpdump -i lo -w 파일.pcap` 으로 저장한 뒤 Windows 에서 엽니다.
+- 이 프로그램들은 Seq/Ack 실제 값을 출력합니다. Wireshark 에서 편집 → 설정 → Protocols → TCP → Relative sequence numbers 를 끄고 비교합니다.
+- Wireshark 는 기본 설정에서 체크섬을 검증하지 않습니다(`[unverified]`). 검증을 켜거나 tcpdump `-v` 로 보면 송신 패킷의 체크섬이 "incorrect" 로 나오는데, 체크섬 계산을 네트워크 장치에 맡기는 기능(offload) 때문이며 오류가 아닙니다.
+- 수신 패킷 길이가 MTU(1500)보다 크게 보이는 것은 여러 세그먼트를 합쳐 올리는 기능(GRO 등) 때문입니다. HTTP 1·2차 테스트에서는 이런 패킷을 Wireshark(Windows 쪽 캡처)가 IP 전체 길이 0 으로 기록했습니다.
+- HTTPS·TLS 구간(HTTP 의 https, 이메일 외부 실습, HTTPS 트래커 등)은 암호화되어 내용을 해석할 수 없습니다.
+- `/mnt/c` (Windows 폴더)에서 빌드·실행할 때 권한 문제가 생기면 폴더를 WSL 홈으로 복사해서 실행합니다.
 
-- 암호화(MSE/PE) 연결은 탐지만 하고 내용은 해석할 수 없습니다.
-- uTP(UDP 위의 BitTorrent 피어 연결)와 IPv6 는 분석하지 않습니다.
-- TCP 를 완전히 재조립하지는 않습니다. 순서가 뒤바뀌거나 손실되면 다음 메시지부터 다시 추적합니다.
-- HTTPS 트래커는 암호화되어 내용을 볼 수 없습니다.
+## 5. 결과·보고서 자료 위치
+
+| 파트 | 캡처 결과 | 검증·설명 자료 |
+| --- | --- | --- |
+| HTTP | `HTTP_Test_Result/sniff_wsl*.log`, `wsl*.pcapng` | [HTTP_Test_Result/README.md](HTTP_Test_Result/README.md) |
+| DNS · Traceroute | `Minho_DNS_Traceroute/dns-trace.pcap`, 실행·검증 스크린샷 6장 | [Minho_DNS_Traceroute/README.md](Minho_DNS_Traceroute/README.md) 5~7장 |
+| 이메일 | `Email-Protocol/첨부사진/` (터미널, Wireshark IMAP·POP3, SMTP·IMAP·POP3 캡처, 송수신 메일 화면 7장) | [Email-Protocol/README.md](Email-Protocol/README.md) 4장 |
+| BitTorrent | `bit_torrent/captures/` (분석 결과 txt, 루프백 pcap, PNG, 보고서용 `전달용/`). 실제 토렌트 pcap 은 용량과 공인 IP 때문에 레포에 올리지 않음 | [bit_torrent/report_tip.md](bit_torrent/report_tip.md), [bit_torrent/README.md](bit_torrent/README.md) 4-4 장 |
+
+## 6. 폴더 구조
+
+```text
+NetworkProject/
+├── README.md                  이 문서 (팀 전체 안내)
+├── HTTP_Code/
+│   └── http_sniffer/          HTTP 스니퍼 소스 (main.c, http1.c, http2.c, hpack.c)
+├── HTTP_Test_Result/          HTTP 1·2차 테스트 로그, Wireshark pcapng, 대조 분석
+├── Minho_DNS_Traceroute/      DNS·Traceroute 소스, 검증 스크린샷, dns-trace.pcap
+├── Email-Protocol/            메일 서버·캡처 (C), 송수신기·캡처 GUI (Python)
+└── bit_torrent/               BitTorrent 분석기 소스, 테스트 생성기, 캡처·검증 스크립트, 캡처 결과, 보고서 팁
+```
