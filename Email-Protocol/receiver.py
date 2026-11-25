@@ -23,7 +23,7 @@ def retrieve():
             raise RuntimeError("IMAP 조회 실패")
         imap_message = data[0][1]
     if imap_message != pop_message:
-        raise RuntimeError("POP3와 IMAP 조회 결과가 달라")
+        raise RuntimeError("POP3와 IMAP 조회 결과가 일치하지 않습니다.")
     return BytesParser(policy=policy.default).parsebytes(imap_message).get_content().rstrip("\r\n")
 
 def main():
@@ -31,13 +31,13 @@ def main():
     with subprocess.Popen([binary], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as server:
         try:
             if server.stdout.readline() != b"READY\n":
-                raise RuntimeError("메일 서버를 시작하지 못했어. 기존 서버의 포트 사용 여부를 확인해.")
+                raise RuntimeError("메일 서버를 시작하지 못했습니다. 포트가 이미 사용 중인지 확인하세요.")
             for event in server.stdout:
                 if event == b"STORED\n":
                     print(retrieve(), flush=True)
                     server.stdin.write(b"+")
                     server.stdin.flush()
-            raise RuntimeError("메일 서버가 종료됐어.")
+            raise RuntimeError("메일 서버가 종료되었습니다.")
         finally:
             server.terminate()
 

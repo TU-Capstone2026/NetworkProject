@@ -18,7 +18,7 @@ def main():
     for line in sys.stdin:
         msg = make_mail(line.rstrip("\n"))
         if len(msg.as_bytes()) >= 8192:
-            print("문장이 로컬 메일함의 8 KiB 한도를 넘어.", file=sys.stderr)
+            print("메일이 로컬 메일함의 8 KiB 한도를 초과합니다.", file=sys.stderr)
             continue
         try:
             with smtplib.SMTP("127.0.0.1", 2525, timeout=10) as client:
