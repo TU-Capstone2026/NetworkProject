@@ -161,6 +161,8 @@ def main():
 
     clear_protocol = tk.StringVar(value="SMTP")
 
+    clear_protocol = tk.StringVar(value="SMTP")
+
     def clear_packets():
         nonlocal current
 
