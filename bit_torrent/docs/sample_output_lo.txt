@@ -1,0 +1,335 @@
+BitTorrent 패킷 분석기 - 인터페이스: lo  (Ctrl+C 로 종료)
+------------------------------------------------------------------------
+#4 [22:30:10.097] [송신] BitTorrent Peer Wire - Handshake
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0xfca2  TotalLen=120  Proto=TCP(6)
+ [TCP] 59788 -> 6881  Seq=4259413498  Ack=2257395806  Flags=[PSH,ACK]  Win=64  HdrLen=32  Len=68
+ [TCP 연결 설정] 이 연결의 3-way handshake (앞서 캡처된 패킷)
+       #1 [22:30:09.947] [송신] 59788 -> 6881  Flags=[SYN]  Seq=4259413497  (1단계 SYN: 연결 요청)
+       #2 [22:30:09.947] [송신] 6881 -> 59788  Flags=[SYN,ACK]  Seq=2257395805  Ack=4259413498  (2단계 SYN+ACK: 연결 요청 수락)
+       #3 [22:30:09.947] [송신] 59788 -> 6881  Flags=[ACK]  Seq=4259413498  Ack=2257395806  (3단계 ACK: 연결 확립)
+ [APP] BitTorrent Handshake
+       pstrlen    : 19
+       pstr       : "BitTorrent protocol"
+       Reserved   : 00 00 00 00 00 10 00 05  → [Extension Protocol(BEP 10)] [Fast Extension(BEP 6)] [DHT(BEP 5)]
+       Info Hash  : 5a27bfa7070c7f62de1c67dead9ddb5b97b6acd1  (토렌트 식별값, info 딕셔너리의 SHA-1)
+       Peer ID    : -qB4650-TEAM3CLIENT1
+       Client     : qBittorrent (버전 코드 4.6.5.0)
+------------------------------------------------------------------------
+#6 [22:30:10.097] [송신] BitTorrent Peer Wire - Handshake
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x4669  TotalLen=249  Proto=TCP(6)
+ [TCP] 6881 -> 59788  Seq=2257395806  Ack=4259413566  Flags=[PSH,ACK]  Win=64  HdrLen=32  Len=197
+ [APP] BitTorrent Handshake
+       pstrlen    : 19
+       pstr       : "BitTorrent protocol"
+       Reserved   : 00 00 00 00 00 10 00 05  → [Extension Protocol(BEP 10)] [Fast Extension(BEP 6)] [DHT(BEP 5)]
+       Info Hash  : 5a27bfa7070c7f62de1c67dead9ddb5b97b6acd1  (토렌트 식별값, info 딕셔너리의 SHA-1)
+       Peer ID    : -TR4050-TEAM3SERVER1
+       Client     : Transmission (버전 코드 4.0.5.0)
+ [APP] BitTorrent Message: Bitfield (id=5, len=3) - 내가 가진 조각 목록(비트맵)
+       Bitfield   : 2 bytes (조각 최대 16개 표현, 1=보유 0=미보유)
+       보유 조각  : 10개
+       앞부분     : 11111111 11000000
+ [APP] BitTorrent Message: Extended (id=20, len=118) - 확장 메시지 (BEP 10)
+       확장 ID    : 0 → Extended Handshake (지원하는 확장 기능 목록 교환)
+       m (확장)   : ut_metadata=2 ut_pex=1
+       v (클라이언트): Transmission 4.0.5
+       p (리슨 포트): 6881
+       metadata_size: 31337 bytes
+       reqq (최대 요청 수): 500
+       yourip (상대가 본 내 IP): 127.0.0.1
+------------------------------------------------------------------------
+#8 [22:30:10.247] [송신] BitTorrent Peer Wire
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0xfca4  TotalLen=57  Proto=TCP(6)
+ [TCP] 59788 -> 6881  Seq=4259413566  Ack=2257396003  Flags=[PSH,ACK]  Win=64  HdrLen=32  Len=5
+ [APP] BitTorrent Message: Interested (id=2, len=1) - 상대가 가진 조각을 받고 싶음
+------------------------------------------------------------------------
+#10 [22:30:10.398] [송신] BitTorrent Peer Wire
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x466b  TotalLen=57  Proto=TCP(6)
+ [TCP] 6881 -> 59788  Seq=2257396003  Ack=4259413571  Flags=[PSH,ACK]  Win=64  HdrLen=32  Len=5
+ [APP] BitTorrent Message: Unchoke (id=1, len=1) - 상대에게 업로드 허용(차단 해제)
+------------------------------------------------------------------------
+#12 [22:30:10.548] [송신] BitTorrent Peer Wire
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0xfca6  TotalLen=69  Proto=TCP(6)
+ [TCP] 59788 -> 6881  Seq=4259413571  Ack=2257396008  Flags=[PSH,ACK]  Win=64  HdrLen=32  Len=17
+ [APP] BitTorrent Message: Request (id=6, len=13) - 블록 데이터 요청
+       Index=0  Begin=0  Length=16384
+------------------------------------------------------------------------
+#14 [22:30:10.699] [송신] BitTorrent Peer Wire
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x466d  TotalLen=1065  Proto=TCP(6)
+ [TCP] 6881 -> 59788  Seq=2257396008  Ack=4259413588  Flags=[PSH,ACK]  Win=64  HdrLen=32  Len=1013
+ [APP] BitTorrent Message: Piece (id=7, len=16393) - 요청한 블록 데이터 전송
+       Index=0  Begin=0  블록 크기=16384 bytes (이 세그먼트에 1000 bytes)
+       → 나머지 15384 bytes 는 다음 세그먼트로 이어짐
+------------------------------------------------------------------------
+#24 [22:30:11.450] [송신] BitTorrent Peer Wire
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0xfcac  TotalLen=55  Proto=TCP(6)
+ [TCP] 59788 -> 6881  Seq=4259413588  Ack=2257412405  Flags=[PSH,ACK]  Win=103  HdrLen=32  Len=3
+ [APP] 메시지 헤더 일부(3 bytes)만 도착 → 다음 세그먼트와 합쳐서 해석
+------------------------------------------------------------------------
+#26 [22:30:11.600] [송신] BitTorrent Peer Wire
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0xfcad  TotalLen=58  Proto=TCP(6)
+ [TCP] 59788 -> 6881  Seq=4259413591  Ack=2257412405  Flags=[PSH,ACK]  Win=103  HdrLen=32  Len=6
+ [APP] BitTorrent Message: Have (id=4, len=5) - 조각 하나를 새로 다 받았음을 알림
+       Piece Index: 0
+       (앞의 3 bytes 는 이전 세그먼트에 있던 것을 합쳐서 해석)
+------------------------------------------------------------------------
+#28 [22:30:11.750] [송신] BitTorrent Peer Wire
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0xfcae  TotalLen=59  Proto=TCP(6)
+ [TCP] 59788 -> 6881  Seq=4259413597  Ack=2257412405  Flags=[PSH,ACK]  Win=103  HdrLen=32  Len=7
+ [APP] BitTorrent Message: Port (id=9, len=3) - 내 DHT 포트 알림
+       DHT Port   : 6881
+------------------------------------------------------------------------
+#30 [22:30:11.901] [송신] BitTorrent Peer Wire
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0xfcaf  TotalLen=86  Proto=TCP(6)
+ [TCP] 59788 -> 6881  Seq=4259413604  Ack=2257412405  Flags=[PSH,ACK]  Win=103  HdrLen=32  Len=34
+ [APP] BitTorrent Message: Request (id=6, len=13) - 블록 데이터 요청
+       Index=1  Begin=0  Length=16384
+ [APP] BitTorrent Message: Cancel (id=8, len=13) - 보낸 요청 취소
+       Index=1  Begin=0  Length=16384
+------------------------------------------------------------------------
+#32 [22:30:12.051] [송신] BitTorrent Peer Wire
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x4676  TotalLen=56  Proto=TCP(6)
+ [TCP] 6881 -> 59788  Seq=2257412405  Ack=4259413638  Flags=[PSH,ACK]  Win=64  HdrLen=32  Len=4
+ [APP] BitTorrent Message: Keep-Alive (len=0) - 연결 유지 확인
+------------------------------------------------------------------------
+#34 [22:30:12.201] [송신] BitTorrent Peer Wire
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0xfcb1  TotalLen=57  Proto=TCP(6)
+ [TCP] 59788 -> 6881  Seq=4259413638  Ack=2257412409  Flags=[PSH,ACK]  Win=103  HdrLen=32  Len=5
+ [APP] BitTorrent Message: Not Interested (id=3, len=1) - 상대 조각에 관심 없음
+------------------------------------------------------------------------
+#36 [22:30:12.351] [송신] BitTorrent Peer Wire
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x4678  TotalLen=57  Proto=TCP(6)
+ [TCP] 6881 -> 59788  Seq=2257412409  Ack=4259413643  Flags=[PSH,ACK]  Win=64  HdrLen=32  Len=5
+ [APP] BitTorrent Message: Choke (id=0, len=1) - 상대에게 업로드하지 않겠음(차단)
+------------------------------------------------------------------------
+#38 [22:30:12.502] [송신] BitTorrent TCP 연결 해제 (FIN)
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0xfcb3  TotalLen=52  Proto=TCP(6)
+ [TCP] 59788 -> 6881  Seq=4259413643  Ack=2257412414  Flags=[FIN,ACK]  Win=103  HdrLen=32  Len=0
+ [TCP 연결 해제] FIN: 이 방향의 데이터 전송 종료
+------------------------------------------------------------------------
+#39 [22:30:12.545] [송신] BitTorrent TCP 연결 해제 (ACK)
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x4679  TotalLen=52  Proto=TCP(6)
+ [TCP] 6881 -> 59788  Seq=2257412414  Ack=4259413644  Flags=[ACK]  Win=64  HdrLen=32  Len=0
+ [TCP 연결 해제] ACK: 상대가 보낸 FIN 확인 (Ack=4259413644)
+------------------------------------------------------------------------
+#40 [22:30:12.652] [송신] BitTorrent TCP 연결 해제 (FIN)
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x467a  TotalLen=52  Proto=TCP(6)
+ [TCP] 6881 -> 59788  Seq=2257412414  Ack=4259413644  Flags=[FIN,ACK]  Win=64  HdrLen=32  Len=0
+ [TCP 연결 해제] FIN: 이 방향의 데이터 전송 종료 + 상대 FIN 에 대한 ACK
+------------------------------------------------------------------------
+#41 [22:30:12.652] [송신] BitTorrent TCP 연결 해제 (ACK)
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0xfcb4  TotalLen=52  Proto=TCP(6)
+ [TCP] 59788 -> 6881  Seq=4259413644  Ack=2257412415  Flags=[ACK]  Win=103  HdrLen=32  Len=0
+ [TCP 연결 해제] ACK: 상대가 보낸 FIN 확인 (Ack=2257412415)
+------------------------------------------------------------------------
+#45 [22:30:13.304] [송신] BitTorrent HTTP Tracker - Announce 요청
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x0ea4  TotalLen=325  Proto=TCP(6)
+ [TCP] 48986 -> 6969  Seq=116497054  Ack=240418837  Flags=[PSH,ACK]  Win=64  HdrLen=32  Len=273
+ [APP] HTTP Tracker Announce 요청: GET /announce
+       info_hash  : 5a27bfa7070c7f62de1c67dead9ddb5b97b6acd1
+       peer_id    : -qB4650-TEAM3CLIENT1  (qBittorrent (버전 코드 4.6.5.0))
+       port       : 6881  (피어 연결을 받을 포트)
+       uploaded   : 0  (지금까지 업로드한 bytes)
+       downloaded : 0  (지금까지 다운로드한 bytes)
+       left       : 163840  (남은 bytes)
+       event      : started  (started/completed/stopped)
+       compact    : 1  (1 = 피어 목록을 6 bytes 압축 형식으로)
+       numwant    : 50  (받고 싶은 피어 수)
+       Host       : 127.0.0.1:6969
+------------------------------------------------------------------------
+#47 [22:30:13.454] [송신] BitTorrent HTTP Tracker - 응답
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x95c9  TotalLen=225  Proto=TCP(6)
+ [TCP] 6969 -> 48986  Seq=240418837  Ack=116497327  Flags=[PSH,ACK]  Win=64  HdrLen=32  Len=173
+ [APP] HTTP Tracker 응답: HTTP/1.1 200 OK (본문은 bencode 딕셔너리)
+       interval   : 1800 초 (다음 announce 까지 대기)
+       min interval: 900 초
+       complete   : 5 (시더 수)
+       incomplete : 3 (리처 수)
+       peers      : 2개 (compact, 6 bytes 씩) → 127.0.0.1:6881, 10.0.0.2:51413
+------------------------------------------------------------------------
+#52 [22:30:13.955] [송신] BitTorrent UDP Tracker - connect 요청
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x195e  TotalLen=44  Proto=UDP(17)
+ [UDP] 54232 -> 6969  Length=24  (데이터 16 bytes)
+ [APP] UDP Tracker 요청 (BEP 15): action=0 (connect)
+       Connection ID  : 0x0000041727101980 (connect 고정값 0x41727101980)
+       Transaction ID : 0x0000a001 (40961)
+------------------------------------------------------------------------
+#53 [22:30:14.105] [송신] BitTorrent UDP Tracker - connect 응답
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x1975  TotalLen=44  Proto=UDP(17)
+ [UDP] 6969 -> 54232  Length=24  (데이터 16 bytes)
+ [APP] UDP Tracker 응답 (BEP 15): action=0 (connect)
+       Transaction ID : 0x0000a001 (40961) - 요청과 일치
+       Connection ID  : 0x1122334455667788 (이후 announce/scrape 요청에 사용)
+------------------------------------------------------------------------
+#54 [22:30:14.256] [송신] BitTorrent UDP Tracker - announce 요청
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x197e  TotalLen=126  Proto=UDP(17)
+ [UDP] 54232 -> 6969  Length=106  (데이터 98 bytes)
+ [APP] UDP Tracker 요청 (BEP 15): action=1 (announce)
+       Connection ID  : 0x1122334455667788 (connect 응답으로 받은 값)
+       Transaction ID : 0x0000a002 (40962)
+       Info Hash      : 5a27bfa7070c7f62de1c67dead9ddb5b97b6acd1
+       Peer ID        : -qB4650-TEAM3CLIENT1  (qBittorrent (버전 코드 4.6.5.0))
+       Downloaded=0  Left=163840  Uploaded=0
+       Event          : 2 (started (다운로드 시작))
+       Num Want       : -1   Port : 6881
+------------------------------------------------------------------------
+#55 [22:30:14.406] [송신] BitTorrent UDP Tracker - announce 응답
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x19a4  TotalLen=66  Proto=UDP(17)
+ [UDP] 6969 -> 54232  Length=46  (데이터 38 bytes)
+ [APP] UDP Tracker 응답 (BEP 15): action=1 (announce)
+       Transaction ID : 0x0000a002 (40962) - 요청과 일치
+       Interval=1800초  Leechers=3  Seeders=5
+       Peers          : 3개 → 127.0.0.1:6881, 10.0.0.2:51413, 10.0.0.3:6889
+------------------------------------------------------------------------
+#56 [22:30:14.556] [송신] BitTorrent UDP Tracker - scrape 요청
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x19af  TotalLen=64  Proto=UDP(17)
+ [UDP] 54232 -> 6969  Length=44  (데이터 36 bytes)
+ [APP] UDP Tracker 요청 (BEP 15): action=2 (scrape)
+       Connection ID  : 0x1122334455667788 (connect 응답으로 받은 값)
+       Transaction ID : 0x0000a003 (40963)
+       Info Hash      : 5a27bfa7070c7f62de1c67dead9ddb5b97b6acd1
+------------------------------------------------------------------------
+#57 [22:30:14.706] [송신] BitTorrent UDP Tracker - scrape 응답
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x19d1  TotalLen=48  Proto=UDP(17)
+ [UDP] 6969 -> 54232  Length=28  (데이터 20 bytes)
+ [APP] UDP Tracker 응답 (BEP 15): action=2 (scrape)
+       Transaction ID : 0x0000a003 (40963) - 요청과 일치
+       Seeders=5  Completed=12  Leechers=3
+------------------------------------------------------------------------
+#58 [22:30:14.857] [송신] BitTorrent UDP Tracker - announce 요청
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x19d4  TotalLen=126  Proto=UDP(17)
+ [UDP] 54232 -> 6969  Length=106  (데이터 98 bytes)
+ [APP] UDP Tracker 요청 (BEP 15): action=1 (announce)
+       Connection ID  : 0x00000000deadbeef (캡처한 connect 응답에 없던 값)
+       Transaction ID : 0x0000a004 (40964)
+       Info Hash      : 5a27bfa7070c7f62de1c67dead9ddb5b97b6acd1
+       Peer ID        : -qB4650-TEAM3CLIENT1  (qBittorrent (버전 코드 4.6.5.0))
+       Downloaded=0  Left=163840  Uploaded=0
+       Event          : 0 (none)
+       Num Want       : -1   Port : 6881
+------------------------------------------------------------------------
+#59 [22:30:15.007] [송신] BitTorrent UDP Tracker - error 응답
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x19ec  TotalLen=58  Proto=UDP(17)
+ [UDP] 6969 -> 54232  Length=38  (데이터 30 bytes)
+ [APP] UDP Tracker 응답 (BEP 15): action=3 (error)
+       Transaction ID : 0x0000a004 (40964) - 요청과 일치
+       Error Message  : Connection ID mismatch
+------------------------------------------------------------------------
+#60 [22:30:15.658] [송신] BitTorrent DHT - ping 질의
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x1a88  TotalLen=93  Proto=UDP(17)
+ [UDP] 6881 -> 6882  Length=73  (데이터 65 bytes)
+ [APP] DHT Query (BEP 5): y=q  q=ping - 노드가 살아 있는지 확인
+       Transaction ID : 6161 ("aa")
+       Node ID        : a9702972aa8239c001790d539f109779ab1f27ca
+       v (클라이언트): LT\x02\x00
+------------------------------------------------------------------------
+#61 [22:30:15.808] [송신] BitTorrent DHT - 응답
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x1a9b  TotalLen=87  Proto=UDP(17)
+ [UDP] 6882 -> 6881  Length=67  (데이터 59 bytes)
+ [APP] DHT Response (BEP 5): y=r - ping 질의에 대한 응답 (Transaction ID 로 매칭)
+       Transaction ID : 6161 ("aa")
+       Node ID        : dd75c3608f550a7a028a05621b6981032af06638
+       ip (상대가 본 내 주소): 127.0.0.1:6881
+------------------------------------------------------------------------
+#62 [22:30:15.958] [송신] BitTorrent DHT - find_node 질의
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x1aba  TotalLen=120  Proto=UDP(17)
+ [UDP] 6881 -> 6882  Length=100  (데이터 92 bytes)
+ [APP] DHT Query (BEP 5): y=q  q=find_node - 목표 ID 에 가까운 노드 찾기
+       Transaction ID : 6262 ("bb")
+       Node ID        : a9702972aa8239c001790d539f109779ab1f27ca
+       Target         : 5a27bfa7070c7f62de1c67dead9ddb5b97b6acd1
+------------------------------------------------------------------------
+#63 [22:30:16.109] [송신] BitTorrent DHT - 응답
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x1acd  TotalLen=137  Proto=UDP(17)
+ [UDP] 6882 -> 6881  Length=117  (데이터 109 bytes)
+ [APP] DHT Response (BEP 5): y=r - find_node 질의에 대한 응답 (Transaction ID 로 매칭)
+       Transaction ID : 6262 ("bb")
+       Node ID        : dd75c3608f550a7a028a05621b6981032af06638
+       Nodes          : 2개 (26 bytes 씩) → 10.0.0.11:6881, 10.0.0.12:6882
+------------------------------------------------------------------------
+#64 [22:30:16.259] [송신] BitTorrent DHT - get_peers 질의
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x1ad7  TotalLen=123  Proto=UDP(17)
+ [UDP] 6881 -> 6882  Length=103  (데이터 95 bytes)
+ [APP] DHT Query (BEP 5): y=q  q=get_peers - 이 info_hash 를 가진 피어 찾기
+       Transaction ID : 6363 ("cc")
+       Node ID        : a9702972aa8239c001790d539f109779ab1f27ca
+       Info Hash      : 5a27bfa7070c7f62de1c67dead9ddb5b97b6acd1
+------------------------------------------------------------------------
+#65 [22:30:16.409] [송신] BitTorrent DHT - 응답
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x1ae6  TotalLen=119  Proto=UDP(17)
+ [UDP] 6882 -> 6881  Length=99  (데이터 91 bytes)
+ [APP] DHT Response (BEP 5): y=r - get_peers 질의에 대한 응답 (Transaction ID 로 매칭)
+       Transaction ID : 6363 ("cc")
+       Node ID        : dd75c3608f550a7a028a05621b6981032af06638
+       Token          : 746f6b2d337465616d
+       Values (피어): 127.0.0.1:6881, 10.0.0.2:51413  (총 2개)
+------------------------------------------------------------------------
+#66 [22:30:16.560] [송신] BitTorrent DHT - announce_peer 질의
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x1b08  TotalLen=176  Proto=UDP(17)
+ [UDP] 6881 -> 6882  Length=156  (데이터 148 bytes)
+ [APP] DHT Query (BEP 5): y=q  q=announce_peer - 내가 이 토렌트를 받고 있음을 등록
+       Transaction ID : 6464 ("dd")
+       Node ID        : a9702972aa8239c001790d539f109779ab1f27ca
+       Info Hash      : 5a27bfa7070c7f62de1c67dead9ddb5b97b6acd1
+       Port           : 6881
+       implied_port   : 0 (1 이면 UDP 출발지 포트를 대신 사용)
+       Token          : 746f6b2d337465616d
+------------------------------------------------------------------------
+#67 [22:30:16.710] [송신] BitTorrent DHT - 응답
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x1b16  TotalLen=75  Proto=UDP(17)
+ [UDP] 6882 -> 6881  Length=55  (데이터 47 bytes)
+ [APP] DHT Response (BEP 5): y=r - announce_peer 질의에 대한 응답 (Transaction ID 로 매칭)
+       Transaction ID : 6464 ("dd")
+       Node ID        : dd75c3608f550a7a028a05621b6981032af06638
+------------------------------------------------------------------------
+#68 [22:30:16.860] [송신] BitTorrent DHT - get_peers 질의
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x1b2c  TotalLen=89  Proto=UDP(17)
+ [UDP] 6881 -> 6882  Length=69  (데이터 61 bytes)
+ [APP] DHT Query (BEP 5): y=q  q=get_peers - 이 info_hash 를 가진 피어 찾기
+       Transaction ID : 6565 ("ee")
+       Node ID        : a9702972aa8239c001790d539f109779ab1f27ca
+------------------------------------------------------------------------
+#69 [22:30:17.011] [송신] BitTorrent DHT - 오류
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0x1b43  TotalLen=89  Proto=UDP(17)
+ [UDP] 6882 -> 6881  Length=69  (데이터 61 bytes)
+ [APP] DHT Error (BEP 5): y=e
+       Transaction ID : 6565 ("ee")
+       Error Code     : 203
+       Error Message  : Protocol Error: missing info_hash
+------------------------------------------------------------------------
+#73 [22:30:17.812] [송신] BitTorrent 포트 - 평문 핸드셰이크 아님
+ [IP ] 127.0.0.1 -> 127.0.0.1  TTL=64  ID=0xdecd  TotalLen=148  Proto=TCP(6)
+ [TCP] 52218 -> 6881  Seq=1010513671  Ack=2056133291  Flags=[PSH,ACK]  Win=64  HdrLen=32  Len=96
+ [TCP 연결 설정] 이 연결의 3-way handshake (앞서 캡처된 패킷)
+       #70 [22:30:17.661] [송신] 52218 -> 6881  Flags=[SYN]  Seq=1010513670  (1단계 SYN: 연결 요청)
+       #71 [22:30:17.661] [송신] 6881 -> 52218  Flags=[SYN,ACK]  Seq=2056133290  Ack=1010513671  (2단계 SYN+ACK: 연결 요청 수락)
+       #72 [22:30:17.661] [송신] 52218 -> 6881  Flags=[ACK]  Seq=1010513671  Ack=2056133291  (3단계 ACK: 연결 확립)
+ [APP] BitTorrent 포트(52218/6881)의 첫 데이터가 "\x13BitTorrent protocol" 로 시작하지 않음
+       → 암호화(MSE/PE) 연결이거나 다른 프로토콜일 수 있음. 앞 16 bytes: 9e2ceb67ea7dd296356854a8249e3416
+
+=================== 캡처 통계 ===================
+ 전체 프레임        : 79 (송신 79 / 수신 0 / 기타 0)
+ lo 중복 사본 제외   : 79
+ IPv4 / TCP / UDP   : 79 / 61 / 18
+ BitTorrent 출력    : 38 패킷
+---------------- BitTorrent 분석 통계 ----------------
+ Peer Wire 핸드셰이크 : 2
+ Peer Wire 메시지     : 12 (Keep-Alive 1 별도)
+   - Choke           : 1
+   - Unchoke         : 1
+   - Interested      : 1
+   - Not Interested  : 1
+   - Have            : 1
+   - Bitfield        : 1
+   - Request         : 2
+   - Piece           : 1
+   - Cancel          : 1
+   - Port            : 1
+   - Extended        : 1
+ 데이터만 이어진 세그먼트 : 4 (piece 블록 등, -v 로 출력)
+ 재전송 / 경계 재탐색 : 0 / 0
+ TCP 연결 설정 / 해제 : 2 / 2
+ 평문 아닌 BT 포트 연결: 1
+ HTTP 트래커          : 2
+ UDP 트래커           : 8
+ DHT 질의/응답/오류   : 5 / 4 / 1
