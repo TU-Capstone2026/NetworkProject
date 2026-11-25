@@ -93,7 +93,7 @@ def main():
     for key, label in STAGES.items():
         table.insert("", "end", iid=key, text=label, open=True, tags=("stage",))
 
-    ip_info = tk.StringVar(value="패킷을 선택해.")
+    ip_info = tk.StringVar(value="연결을 펼친 뒤 패킷 행을 선택하세요.")
     tcp_info = tk.StringVar()
     app_title = ttk.LabelFrame(detail_frame, text="응용 계층", padding=(8, 4))
     for title, value in (("IP 헤더", ip_info), ("TCP 헤더", tcp_info)):
@@ -133,10 +133,10 @@ def main():
             )
             app_title.configure(text=f"응용 계층 · {packet.protocol}")
             lines = packet.lines
-            message = ("이 패킷의 TCP 페이로드는 0 B야." if not packet.size else
-                       "이 패킷에서 완성된 응용 계층 줄이 없어.")
+            message = ("이 패킷의 TCP 페이로드는 0 B입니다." if not packet.size else
+                       "이 패킷에서 완성된 응용 계층 줄이 없습니다.")
         else:
-            ip_info.set("연결을 펼치고 패킷 행을 선택해.")
+            ip_info.set("연결을 펼친 뒤 패킷 행을 선택하세요.")
             tcp_info.set("")
             app_title.configure(text="응용 계층")
             message = ""

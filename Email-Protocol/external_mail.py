@@ -77,7 +77,7 @@ def imap_read(args, secret):
                                 return msg
             if attempt < 11:
                 time.sleep(3)
-    raise RuntimeError("INBOX에서 지정한 메일을 찾지 못했어.")
+    raise RuntimeError("받은편지함에서 지정한 메일을 찾지 못했습니다.")
 
 
 def pop_read(args, secret):
@@ -85,7 +85,7 @@ def pop_read(args, secret):
                              context=ssl.create_default_context(), timeout=20)
     try:
         if args.oauth:
-            raise RuntimeError("POP3 테스트는 앱 비밀번호를 사용해. OAuth 수신은 IMAP을 사용해.")
+            raise RuntimeError("POP3 조회에는 앱 비밀번호를 사용하세요. OAuth로 수신하려면 IMAP을 사용하세요.")
         client.user(args.account)
         client.pass_(secret)
         count, _ = client.stat()
@@ -94,7 +94,7 @@ def pop_read(args, secret):
             header = b"\r\n".join(client.top(number, 0)[1])
             if str(parser.parsebytes(header)["Message-ID"]) == args.id:
                 return parser.parsebytes(b"\r\n".join(client.retr(number)[1]))
-        raise RuntimeError("POP으로 제공된 최근 30통에서 해당 메일을 찾지 못했어.")
+        raise RuntimeError("POP 서버가 제공한 목록에서 최대 30통을 검사했으나, 지정한 메일을 찾지 못했습니다.")
     finally:
         client.quit()
 
@@ -102,10 +102,10 @@ def pop_read(args, secret):
 def receive():
     args = options(False)
     if not re.fullmatch(r"<[A-Za-z0-9._+%-]+@[A-Za-z0-9.-]+>", args.id):
-        raise ValueError("송신 터미널에 표시된 <Message-ID>를 그대로 입력해.")
+        raise ValueError("송신 터미널에 표시된 <Message-ID>를 그대로 입력하세요.")
     secret = credentials(args)
     msg = pop_read(args, secret) if args.pop else imap_read(args, secret)
     part = msg.get_body(preferencelist=("plain",))
     if part is None:
-        raise RuntimeError("텍스트 본문이 없어.")
+        raise RuntimeError("메일에 텍스트 본문이 없습니다.")
     print(part.get_content().rstrip("\r\n"))
