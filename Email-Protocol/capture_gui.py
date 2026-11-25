@@ -1,4 +1,5 @@
 """Run with ./mail_capture INTERFACE | python3 capture_gui.py."""
+from packet_details import application_fields, network_fields, tcp_fields
 from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -28,6 +29,9 @@ class Packet:
     flags: str
     size: int
     lines: list = field(default_factory=list)
+
+    ip_header: bytes = b""
+    tcp_header: bytes = b""
 
     @classmethod
     def parse(cls, time, line):
@@ -93,20 +97,16 @@ def main():
     for key, label in STAGES.items():
         table.insert("", "end", iid=key, text=label, open=True, tags=("stage",))
 
-    ip_info = tk.StringVar(value="연결을 펼친 뒤 패킷 행을 선택하세요.")
-    tcp_info = tk.StringVar()
-    app_title = ttk.LabelFrame(detail_frame, text="응용 계층", padding=(8, 4))
-    for title, value in (("IP 헤더", ip_info), ("TCP 헤더", tcp_info)):
-        section = ttk.LabelFrame(detail_frame, text=title, padding=(8, 4))
-        section.pack(fill="x", pady=(0, 4))
-        ttk.Label(section, textvariable=value).pack(anchor="w")
-    app_title.pack(fill="both", expand=True)
-    detail_scroll = ttk.Scrollbar(app_title)
-    detail_scroll.pack(side="right", fill="y")
-    detail = tk.Text(app_title, height=5, wrap="word", state="disabled",
-                     yscrollcommand=detail_scroll.set)
-    detail_scroll.configure(command=detail.yview)
+    detail = ttk.Treeview(detail_frame, columns=("value",), selectmode="browse")
+    detail.heading("#0", text="계층 / 필드")
+    detail.heading("value", text="분석 값")
+    detail.column("#0", width=240, stretch=False)
+    detail.column("value", width=560)
+    scroll_detail = ttk.Scrollbar(detail_frame, command=detail.yview)
+    scroll_detail.pack(side="right", fill="y")
+    detail.configure(yscrollcommand=scroll_detail.set)
     detail.pack(fill="both", expand=True)
+    last_detail = None
 
     records = {}
     order = deque()
@@ -119,59 +119,88 @@ def main():
     stage_counts = dict.fromkeys(STAGES, 0)
 
     def show(*_):
+        nonlocal last_detail
         selected = table.selection()
         packet = records.get(selected[0]) if selected else None
-        lines = []
-        if packet:
-            src, sport = packet.source.rsplit(":", 1)
-            dst, dport = packet.destination.rsplit(":", 1)
-            ip_info.set(f"출발지 IP {src}    →    목적지 IP {dst}")
-            tcp_info.set(
-                f"출발지 포트 {sport}  →  목적지 포트 {dport}    "
-                f"Seq {packet.seq}    Ack {packet.ack}    "
-                f"플래그 {packet.flags or '—'}    페이로드 {packet.size} B"
-            )
-            app_title.configure(text=f"응용 계층 · {packet.protocol}")
-            lines = packet.lines
-            message = ("이 패킷의 TCP 페이로드는 0 B입니다." if not packet.size else
-                       "이 패킷에서 완성된 응용 계층 줄이 없습니다.")
+        signature = (selected, bool(packet and packet.ip_header), len(packet.lines) if packet else 0)
+        if signature == last_detail:
+            return
+        last_detail = signature
+        detail.delete(*detail.get_children())
+        if not packet:
+            detail.insert("", "end", text="패킷 행을 선택하세요.")
+            return
+
+        def layer(title, fields):
+            parent = detail.insert("", "end", text=title, open=True)
+            for name, value in fields:
+                detail.insert(parent, "end", text=name, values=(str(value),))
+            return parent
+
+        src, sport = packet.source.rsplit(":", 1)
+        dst, dport = packet.destination.rsplit(":", 1)
+        ip_fields = [("Source", src), ("Destination", dst)]
+        if packet.ip_header:
+            ip_fields.extend(network_fields(packet.ip_header))
+        layer("Internet Protocol", ip_fields)
+        transport = [("Source port", sport), ("Destination port", dport),
+                     ("Sequence (raw)", packet.seq), ("Acknowledgment (raw)", packet.ack),
+                     ("Payload length", packet.size)]
+        if packet.tcp_header:
+            transport.extend(tcp_fields(packet.tcp_header))
         else:
-            ip_info.set("연결을 펼친 뒤 패킷 행을 선택하세요.")
-            tcp_info.set("")
-            app_title.configure(text="응용 계층")
-            message = ""
-        detail.configure(state="normal")
-        detail.delete("1.0", "end")
-        detail.insert("1.0", "\n".join(lines) if lines else message)
-        detail.configure(state="disabled")
+            transport.append(("Flags", packet.flags))
+        layer("Transmission Control Protocol", transport)
+        app = layer(packet.protocol, [])
+        for line in packet.lines:
+            item = detail.insert(app, "end", text="메시지", values=(line,), open=True)
+            for name, value in application_fields(packet.protocol, line):
+                detail.insert(item, "end", text=name, values=(str(value),))
+        if not packet.lines:
+            detail.insert(app, "end", text="페이로드 없음" if not packet.size else "완성된 메시지 없음")
+
+    clear_protocol = tk.StringVar(value="SMTP")
 
     def clear_packets():
-        nonlocal current, count
+        nonlocal current
 
-        for key, title in STAGES.items():
-            groups = table.get_children(key)
-            if groups:
-                table.delete(*groups)
-            stage_counts[key] = 0
-            table.item(key, text=f"{title} · 0개")
+        protocol = clear_protocol.get()
+        groups = {group for group, key in group_keys.items() if key[0] == protocol}
+        if not groups:
+            return
 
-        records.clear()
+        kept = deque()
+        for row, group in order:
+            if group not in groups:
+                kept.append((row, group))
+                continue
+
+            packet = records.pop(row)
+            stage_counts[packet.stage] -= 1
+            if current == row:
+                current = None
+
         order.clear()
-        connections.clear()
-        group_keys.clear()
-        current = None
-        count = 0
+        order.extend(kept)
 
-        if status.get().startswith("캡처 종료"):
-            status.set("캡처 종료 · 캡처한 메일 패킷 0개")
-        else:
-            status.set(f"{source} · 캡처한 메일 패킷 0개")
+        for group in groups:
+            key = group_keys.pop(group)
+            connections.pop(key, None)
+        table.delete(*groups)
 
+        label = "캡처 종료" if status.get().startswith("캡처 종료") else source
+        status.set(f"{label} · 캡처한 메일 패킷 {len(order)}개")
+        for stage, title in STAGES.items():
+            table.item(stage, text=f"{title} · {stage_counts[stage]}개")
         show()
 
     ttk.Button(toolbar, text="패킷 비우기", command=clear_packets).pack(
         side="right", padx=(0, 8)
     )
+    ttk.Combobox(
+        toolbar, textvariable=clear_protocol, values=tuple(MAIL_PORTS),
+        state="readonly", width=7
+    ).pack(side="right", padx=(0, 6))
 
     def pause_follow(_):
         follow.set(False)
@@ -202,7 +231,8 @@ def main():
         if len(order) > MAX_PACKETS:
             old, old_group = order.popleft()
             table.delete(old)
-            del records[old]
+            old_packet = records.pop(old)
+            stage_counts[old_packet.stage] -= 1
             if not table.get_children(old_group):
                 table.delete(old_group)
                 old_key = group_keys.pop(old_group)
@@ -232,6 +262,11 @@ def main():
             if packet is not None:
                 current = add_packet(packet)
                 changed = True
+            elif line.startswith("HEADERS ") and current:
+                _, ip_hex, tcp_hex = line.split()
+                records[current].ip_header = bytes.fromhex(ip_hex)
+                records[current].tcp_header = bytes.fromhex(tcp_hex)
+                changed = True
             elif line.startswith("  ") and current:
                 lines = records[current].lines
                 lines.append(line.strip())
@@ -243,7 +278,7 @@ def main():
                 changed = True
         if changed or ended:
             label = "캡처 종료" if ended else source
-            status.set(f"{label} · 캡처한 메일 패킷 {count}개")
+            status.set(f"{label} · 캡처한 메일 패킷 {len(order)}개")
             for key, title in STAGES.items():
                 table.item(key, text=f"{title} · {stage_counts[key]}개")
             if follow.get() and current:

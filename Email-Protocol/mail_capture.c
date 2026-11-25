@@ -104,7 +104,7 @@ static void payload(struct stream *s, uint32_t seq, const unsigned char *p,
     }
 }
 
-static void decode_tcp(const char *src, const char *dst, const unsigned char *tcp, size_t length)
+static void decode_tcp(const unsigned char *ip, size_t ih, const char *src, const char *dst, const unsigned char *tcp, size_t length)
 {
     if (length<20) return;
     size_t th=(tcp[12]>>4)*4;
@@ -121,6 +121,11 @@ static void decode_tcp(const char *src, const char *dst, const unsigned char *tc
            " flags=%s%s%s%s%s bytes=%zu\n",name,src,sp,dst,dp,seq,u32(tcp+8),
            flags&2?" SYN":"",flags&16?" ACK":"",flags&8?" PSH":"",
            flags&1?" FIN":"",flags&4?" RST":"",bytes);
+    printf("HEADERS ");
+    for (size_t i=0; i<ih; ++i) printf("%02x",ip[i]);
+    putchar(' ');
+    for (size_t i=0; i<th; ++i) printf("%02x",tcp[i]);
+    putchar('\n');
     bool syn=(flags&2)!=0;
     if (bytes || syn) {
         struct stream *s=lookup(src,dst,sp,dp,seq,syn);
@@ -150,7 +155,7 @@ static void ipv4(const unsigned char *ip, size_t n)
     char src[INET_ADDRSTRLEN], dst[INET_ADDRSTRLEN];
     inet_ntop(AF_INET,ip+12,src,sizeof src);
     inet_ntop(AF_INET,ip+16,dst,sizeof dst);
-    decode_tcp(src,dst,ip+ih,total-ih);
+    decode_tcp(ip,ih,src,dst,ip+ih,total-ih);
 }
 
 static void ipv6(const unsigned char *ip, size_t n)
@@ -159,7 +164,7 @@ static void ipv6(const unsigned char *ip, size_t n)
     char src[INET6_ADDRSTRLEN], dst[INET6_ADDRSTRLEN];
     inet_ntop(AF_INET6,ip+8,src,sizeof src);
     inet_ntop(AF_INET6,ip+24,dst,sizeof dst);
-    decode_tcp(src,dst,ip+40,u16(ip+4));
+    decode_tcp(ip,40,src,dst,ip+40,u16(ip+4));
 }
 
 static void ethernet(const unsigned char *p,size_t n)
