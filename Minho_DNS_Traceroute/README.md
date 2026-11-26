@@ -12,11 +12,25 @@ gcc -std=c11 -Wall -Wextra -Wpedantic -o trace_capture trace_capture.c
 | 실험 | 캡처 터미널 | 별도의 Ubuntu 터미널 |
 | --- | --- | --- |
 | DNS | `sudo ./dns_capture` | `dig @1.1.1.1 example.com A +notcp +tries=1 +time=3` |
-| Traceroute | `sudo ./trace_capture` | `traceroute -n -I -N 1 -q 1 -w 1 1.1.1.1` |
+| Traceroute | `sudo ./trace_capture` | `traceroute -4 -n -N 1 -q 1 -w 2 -m 30 -p 33434 1.1.1.1` |
 
 캡처 프로그램에 `Listening on eth0`가 뜬 뒤 실험 명령을 실행한다. 캡처는 Ctrl+C로 종료한다.
 
-## 실험 결과
+## UDP Traceroute 캡처
+
+현재 trace_capture.c는 eth0에서 1.1.1.1로 전송하는 IPv4 UDP 탐색(목적지 포트 33434~33534)을 기록한다. ICMP 오류 안에 인용된 로컬 IP와 UDP 포트 쌍을 송신 기록과 대조해 원래 TTL을 표시한다. 첫 홉은 ICMP 11/0, 목적지의 닫힌 포트는 ICMP 3/3으로 확인한다.
+
+별도 WSL 터미널에서 다음 명령을 먼저 실행하고 탐색이 끝나면 Ctrl+C로 저장한다.
+
+```bash
+sudo tcpdump -p -i eth0 -s 0 -w - '(udp and dst host 1.1.1.1 and dst portrange 33434-33534) or icmp' > trace-udp.pcap
+```
+
+7쪽에는 TTL 1의 TX와 대응 RX, 목적지가 보낸 3/3과 대응 TX를 사용한다. Wireshark에서 송신 UDP 포트와 수신 ICMP 안의 원래 UDP 포트를 대조한다. 응답이 없는 홉은 실제 실행 결과대로 기록한다.
+
+## 기존 실험 결과 (DNS 및 ICMP Echo 방식)
+
+이하 Traceroute 설명·함수명·발표 문답과 기존 dns-trace.pcap은 이전 `-I` 실험 기록이다. UDP 방식 제출 자료는 새로 수집한다.
 
 - DNS는 `1.1.1.1:53`에 `example.com`의 A 레코드를 질의했다. IPv4 주소와 UDP 포트, Transaction ID, QR, QNAME, QTYPE을 읽고 압축 이름과 A 레코드를 해석했다. 예시 ID `40568`(`0x9e78`)과 응답 주소 `104.20.23.154`, `172.66.147.243`이 `dig` 및 Wireshark에서 일치했다.
 - Traceroute는 `1.1.1.1`로 보낸 ICMP Echo Request의 IPv4 TTL을 읽고, 응답의 출발지 IP와 ICMP Type·Code를 분석했다. Echo ID와 Sequence로 탐색 패킷과 응답을 연결했다. 첫 요청은 `ID=49900 Seq=1`, `TTL=1`이었고, 첫 홉 `172.25.128.1`에서 Time Exceeded(Type 11, Code 0)가 돌아왔다. 목적지에서는 Echo Reply(Type 0, Code 0)를 확인했다.
