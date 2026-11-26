@@ -26,11 +26,18 @@ gcc -std=c11 -Wall -Wextra -Wpedantic -o trace_capture trace_capture.c
 sudo tcpdump -p -i eth0 -s 0 -w - '(udp and dst host 1.1.1.1 and dst portrange 33434-33534) or icmp' > trace-udp.pcap
 ```
 
-7쪽에는 TTL 1의 TX와 대응 RX, 목적지가 보낸 3/3과 대응 TX를 사용한다. Wireshark에서 송신 UDP 포트와 수신 ICMP 안의 원래 UDP 포트를 대조한다. 응답이 없는 홉은 실제 실행 결과대로 기록한다.
+### 재실험 결과
+
+| 송신 TTL | UDP 출발지 → 목적지 포트 | ICMP 응답 |
+| --- | --- | --- |
+| 1 | 55620 → 33434 | 첫 홉 172.25.128.1에서 Time Exceeded (Type 11, Code 0) |
+| 15 | 44505 → 33448 | 목적지 1.1.1.1에서 Port Unreachable (Type 3, Code 3) |
+
+Traceroute는 15번째 홉에서 목적지 1.1.1.1과 RTT 10.560 ms를 표시했다. Wireshark에서 `udp.srcport == 44505 && udp.dstport == 33448`을 적용하면 25번 UDP 송신과 26번 ICMP 응답을 볼 수 있다. ICMP 응답에 인용된 UDP 포트 쌍을 송신 패킷과 대조해 동일한 탐사에 대한 응답임을 확인했다. 저장소의 2·4·6번 이미지는 이 재실험의 프로그램 출력, 경로 목록, Wireshark 검증 화면이다.
 
 ## 기존 실험 결과 (DNS 및 ICMP Echo 방식)
 
-이하 Traceroute 설명·함수명·발표 문답과 기존 dns-trace.pcap은 이전 `-I` 실험 기록이다. UDP 방식 제출 자료는 새로 수집한다.
+이하 Traceroute 설명·함수명·발표 문답과 기존 dns-trace.pcap은 이전 `-I` 실험 기록이다. 위 2·4·6번 화면은 UDP 재실험 결과다.
 
 - DNS는 `1.1.1.1:53`에 `example.com`의 A 레코드를 질의했다. IPv4 주소와 UDP 포트, Transaction ID, QR, QNAME, QTYPE을 읽고 압축 이름과 A 레코드를 해석했다. 예시 ID `40568`(`0x9e78`)과 응답 주소 `104.20.23.154`, `172.66.147.243`이 `dig` 및 Wireshark에서 일치했다.
 - Traceroute는 `1.1.1.1`로 보낸 ICMP Echo Request의 IPv4 TTL을 읽고, 응답의 출발지 IP와 ICMP Type·Code를 분석했다. Echo ID와 Sequence로 탐색 패킷과 응답을 연결했다. 첫 요청은 `ID=49900 Seq=1`, `TTL=1`이었고, 첫 홉 `172.25.128.1`에서 Time Exceeded(Type 11, Code 0)가 돌아왔다. 목적지에서는 Echo Reply(Type 0, Code 0)를 확인했다.
@@ -122,7 +129,7 @@ DNS 프레임은 **이더넷 → IPv4 → UDP → DNS** 순으로 읽는다. Tra
 
 `example.com`은 DNS 메시지에서 길이 `7`과 `example`, 길이 `3`과 `com`, 종료값 `0`의 순서로 표현할 수 있다. 응답에서 같은 이름을 다시 쓸 때는 앞서 나온 이름의 위치를 가리키는 **압축 포인터**를 사용할 수 있다. 예를 들어 `c0 0c`는 DNS 메시지 시작을 기준으로 12바이트 떨어진 위치를 가리킨다. 이름을 읽는 동안 `cursor`는 현재 읽는 위치, `resume`은 포인터 처리 후 원래 레코드에서 이어 읽을 위치, `limit`은 탐색 범위의 상한을 뜻한다. 포인터를 따라갈 때마다 상한을 앞당겨 순환 참조를 막는다. 질문에서는 이름 뒤의 QTYPE·QCLASS로, 응답에서는 이름 뒤의 TYPE·CLASS·TTL·RDLENGTH를 거쳐 실제 레코드 데이터로 이동한다.
 
-### 4. Traceroute 실험
+### 4. 이전 ICMP Echo 방식 Traceroute 실험
 
 **Traceroute는 탐색 패킷의 IPv4 TTL을 조금씩 높여 가며 각 단계에서 응답한 장비를 확인한다.** IPv4 TTL은 라우터를 지날 때 일반적으로 1씩 감소한다. 전달 도중 TTL이 소진되면 라우터가 ICMP Time Exceeded를 돌려보낼 수 있다. 탐색 패킷이 목적지에 도착하면 목적지가 ICMP Echo Reply로 응답할 수 있다.
 
@@ -160,7 +167,7 @@ Time Exceeded에는 **라우터가 새로 만든 바깥 IPv4·ICMP 헤더**와 *
 
 두 프로그램 모두 수신한 바이트를 읽기 전에 필요한 길이가 있는지 확인한다. IPv4 헤더는 길이 필드(IHL)를 읽어 다음 헤더의 시작을 계산한다. 인터넷 헤더의 2바이트 값은 상위 바이트가 먼저 오므로, 예를 들어 DNS ID `9e 78`은 `0x9e78`, 즉 십진수 `40568`로 해석한다.
 
-### 5. Wireshark로 캡처 파일 확인하기
+### 5. 기존 DNS·ICMP Echo 캡처 확인하기
 
 [캡처 파일 열기](dns-trace.pcap)
 
